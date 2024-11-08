@@ -1,3 +1,5 @@
+import { Navigate } from "react-router-dom";
+
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
@@ -22,14 +24,14 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 
 			getMessage: async () => {
-				try{
+				try {
 					// fetching data from the backend
 					const resp = await fetch(process.env.BACKEND_URL + "/api/hello")
 					const data = await resp.json()
 					setStore({ message: data.message })
 					// don't forget to return something, that is how the async resolves
 					return data;
-				}catch(error){
+				} catch (error) {
 					console.log("Error loading message from backend", error)
 				}
 			},
@@ -46,6 +48,29 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				//reset the global store
 				setStore({ demo: demo });
+			},
+			private: async () => { //Función que ejecuta el fetch private(Estado global).
+				const token = localStorage.getItem("jwt_token"); //Obtengo el token almacenado en localStorage.
+				if (!token) { //Si no hay token paramos la ejecución.
+					return null
+				}
+				try {
+					const resp = await fetch(`https://curly-space-robot-x59wwq4wq47r3wwq-3001.app.github.dev/private`, {
+						headers: {
+							"Content-Type": "application/json",
+							"Authorization": `Bearer ${token}` //Recibimos el token.
+						}
+					});
+					if (!resp.ok) {
+						throw new Error("Application failed!")
+					}
+					const data = await resp.json(); //Esperamos la data.
+					return data //la retornamos por si la queremos usar.
+				} catch (err) {
+					console.log(err);
+					alert("Error http!");
+
+				}
 			}
 		}
 	};
