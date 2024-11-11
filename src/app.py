@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db, User
+from api.models import db, User, Products
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -84,11 +84,14 @@ def serve_any_other_file(path):
 def signup():
 
     body=request.get_json(silent=True)
+    email=body.get('email')
+    password=body.get('password') #Evitamos excepciones validando de esta manera.
+
     if not body:
         return jsonify({'msg': 'All fields are required'}), 400
-    if 'email' not in body:
+    if not email:
         return jsonify({'msg':'The email field is required'}), 400
-    if 'password' not in body:
+    if not password:
         return jsonify({'msg':'The password field is required'}), 400
     
     user=User.query.filter_by(email=body['email']).first()
@@ -111,12 +114,14 @@ def signup():
 def login():
 
     body=request.get_json(silent=True)
+    email=body.get('email')
+    password=body.get('password')
 
     if not body:
         return jsonify({'msg':'All fields are required'})
-    if 'email' not in body:
+    if not email:
         return jsonify({'msg':'The email field is required'}), 400
-    if 'password' not in body:
+    if not password:
         return jsonify({'msg':'The password field is required'}), 400
     
     user=User.query.filter_by(email=body['email']).first()
@@ -131,6 +136,107 @@ def login():
 
     return jsonify({'msg':'ok',
                     'jwt_token':token}), 200
+
+@app.route('/create_product', methods=['POST'])
+#RUTA ADMIN:
+def create_product():
+    try:
+        
+        body = request.get_json(silent=True)
+        if not body:
+            return jsonify({'msg':'All fields are required'}), 400
+    
+        name=body.get('name')
+        description=body.get('description')
+        price=body.get('price')
+        stock=body.get('stock')
+        image=body.get('image')
+     
+        if not name:
+            return jsonify({'msg': 'The name is invalid'}), 400
+        if not description:
+            return jsonify({'msg': 'Description is invalid'}), 400
+        if not price:
+            return jsonify({'msg': 'The price is invalid'}), 400
+        if not stock:
+            return jsonify({'msg': 'The stock is invalid'}), 400
+        if not image:
+            return jsonify({'msg': 'The image is invalid'}), 400
+    
+        new_product = Products(
+            name=name,
+            description=description,
+            price=price,
+            stock=stock,
+            image=image
+        )
+        db.session.add(new_product)
+        db.session.commit()
+    
+        return jsonify({'msg': 'Successfully crafted product',
+                    'data': new_product.serialize()}), 201
+    except Exception as e: return jsonify({'error': str(e)}),
+
+@app.route('/delete_product/<int:product_id>', methods=['DELETE'])
+#RUTA ADMIN:
+def delete_product(product_id):
+
+    product = Products.query.get(product_id)
+
+    if  not product:
+        return ({'msg':f'Product {product_id} not found'}), 404
+    
+    db.session.delete(product)
+    db.session.commit()
+
+    return jsonify({'msg':f'Article {product_id} has been successfully removed'}), 200
+
+@app.route('/modify_product/<int:product_id>', methods=['PUT'])
+#RUTA ADMIN:
+def modify_product(product_id):
+    try:
+        
+        body=request.get_json(silent=True)
+        product=Products.query.get(product_id)
+    
+        if not body:
+            return jsonify({'msg': 'All fields are required'}), 400
+        if not product:
+            return jsonify({'msg':f'Product {product_id} not found'}), 404
+    
+        product.name=body.get('name')
+        product.description=body.get('description')
+        product.price=body.get('price')
+        product.stock=body.get('stock')
+        product.image=body.get('image')
+
+        if not product.name:
+            return jsonify({'msg':'The name is invalid'}), 400
+        if not product.description:
+            return jsonify({'msg':'The description is invalid'}), 400
+        if not product.price:
+            return jsonify({'msg':'The price is invalid'}), 400
+        if not product.stock:
+            return jsonify({'msg':'The stock is invalid'}), 400
+        if not product.image:
+            return jsonify({'msg':'The image is invalid'}), 400
+    
+        db.session.commit()
+
+        return jsonify({'msg':f'The product {product_id} has been satisfactorily modified',
+                    'data': product.serialize()}), 201
+    except Exception as e: return jsonify({'error': str(e)}),
+
+@app.route('/Obtain_specific_product/<int:product_id', mehtods=['GET'])
+@jwt_required()
+def Obtain_specific_product(product_id):
+    try:
+        specific_product=Products.query.get(product_id)
+        if not specific_product:
+            return jsonify({'msg':f'Product {product_id} not found'}),404
+        return jsonify({'msg':'Product found satisfactorily',
+                        'data': specific_product.serialize()}),200
+    except Exception as e: return jsonify({'error': str(e)}),500
 
 @app.route('/private', methods=['GET'])
 @jwt_required()
