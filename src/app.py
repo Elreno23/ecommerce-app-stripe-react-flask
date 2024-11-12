@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db, User, Products
+from api.models import db, User, Products, StockType, UserType
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -82,60 +82,77 @@ def serve_any_other_file(path):
 
 @app.route('/signup', methods=['POST'])
 def signup():
+    try:
+        body=request.get_json(silent=True)
+        if not body:
+            return jsonify({'msg': 'All fields are required'}), 400
+        
+        username=body.get('username')
+        email=body.get('email')
+        password=body.get('password') #Evitamos excepciones validando de esta manera.
+        
+        if not username:
+            return jsonify({'msg': 'The username field is required'}),400
+        if not email:
+            return jsonify({'msg':'The email field is required'}), 400
+        if not password:
+            return jsonify({'msg':'The password field is required'}), 400
+    
+        user_email=User.query.filter_by(email=body['email']).first()
+        username=User.query.filter_by(username=body['username']).first()
+        if user_email:
+            return jsonify({'msg':'The email is already in use, please choose another one'}), 400
+        if username:
+            return jsonify({'msg':'The username is already in use, please choose another one'}), 400
+    
+        encrypted_password=bcrypt.generate_password_hash(body['password']).decode('utf-8')
+    
+        new_user=User(
+            email=body['email'],
+            username=body['username'],
+            password=encrypted_password,
+            usertype=UserType.user,
+            is_active=True
+        )
+        db.session.add(new_user)
+        db.session.commit()
+    
+        return jsonify({'msg':'Successfully registered user'}), 201
 
-    body=request.get_json(silent=True)
-    email=body.get('email')
-    password=body.get('password') #Evitamos excepciones validando de esta manera.
-
-    if not body:
-        return jsonify({'msg': 'All fields are required'}), 400
-    if not email:
-        return jsonify({'msg':'The email field is required'}), 400
-    if not password:
-        return jsonify({'msg':'The password field is required'}), 400
-    
-    user=User.query.filter_by(email=body['email']).first()
-    if user:
-        return jsonify({'msg':'The email is already in use, please choose another one'}), 400
-    
-    encrypted_password=bcrypt.generate_password_hash(body['password']).decode('utf-8')
-    
-    new_user=User(
-        email=body['email'],
-        password=encrypted_password,
-        is_active=True
-    )
-    db.session.add(new_user)
-    db.session.commit()
-    
-    return jsonify({'msg':'Successfully registered user'}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/login', methods=['POST'])
 def login():
-
-    body=request.get_json(silent=True)
-    email=body.get('email')
-    password=body.get('password')
-
-    if not body:
-        return jsonify({'msg':'All fields are required'})
-    if not email:
-        return jsonify({'msg':'The email field is required'}), 400
-    if not password:
-        return jsonify({'msg':'The password field is required'}), 400
+    try:
+        body=request.get_json(silent=True)
+        if not body:
+            return jsonify({'msg':'All fields are required'}), 400
     
-    user=User.query.filter_by(email=body['email']).first()
-    if not user:
-        return jsonify({'msg':'Invalid password or email'}), 401
-    
-    db_password=user.password
-    password_is_true=bcrypt.check_password_hash(db_password, body['password'])
-    if password_is_true is False:
-        return jsonify({'msg':'Invalid password or email'}), 401
-    token=create_access_token(identity=user.email)
+        email=body.get('email')
+        password=body.get('password')
 
-    return jsonify({'msg':'ok',
+        if not email:
+            return jsonify({'msg':'The email field is required'}), 400
+        if not password:
+            return jsonify({'msg':'The password field is required'}), 400
+    
+        user=User.query.filter_by(email=body['email']).first()
+        if not user:
+            return jsonify({'msg':'Invalid password or email'}), 401
+    
+        db_password=user.password
+        password_is_true=bcrypt.check_password_hash(db_password, body['password'])
+        if password_is_true is False:
+            return jsonify({'msg':'Invalid password or email'}), 401
+    
+        token=create_access_token(identity=user.email)
+
+        return jsonify({'msg':'ok',
                     'jwt_token':token}), 200
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/create_product', methods=['POST'])
 #RUTA ADMIN:
@@ -150,6 +167,7 @@ def create_product():
         description=body.get('description')
         price=body.get('price')
         stock=body.get('stock')
+        stocktype=body.get('stocktype')
         image=body.get('image')
      
         if not name:
@@ -160,6 +178,8 @@ def create_product():
             return jsonify({'msg': 'The price is invalid'}), 400
         if not stock:
             return jsonify({'msg': 'The stock is invalid'}), 400
+        if not stocktype:
+            return jsonify({'msg': 'The stocktype is invalid'}), 400
         if not image:
             return jsonify({'msg': 'The image is invalid'}), 400
     
@@ -168,6 +188,7 @@ def create_product():
             description=description,
             price=price,
             stock=stock,
+            stocktype=stocktype,
             image=image
         )
         db.session.add(new_product)
@@ -175,7 +196,9 @@ def create_product():
     
         return jsonify({'msg': 'Successfully crafted product',
                     'data': new_product.serialize()}), 201
-    except Exception as e: return jsonify({'error': str(e)}),
+    
+    except Exception as e: 
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/delete_product/<int:product_id>', methods=['DELETE'])
 #RUTA ADMIN:
@@ -208,6 +231,7 @@ def modify_product(product_id):
         product.description=body.get('description')
         product.price=body.get('price')
         product.stock=body.get('stock')
+        product.stocktype=body.get('stocktype')
         product.image=body.get('image')
 
         if not product.name:
@@ -218,6 +242,8 @@ def modify_product(product_id):
             return jsonify({'msg':'The price is invalid'}), 400
         if not product.stock:
             return jsonify({'msg':'The stock is invalid'}), 400
+        if not product.stocktype:
+            return jsonify({'msg':'The stocktype is invalid'}),400
         if not product.image:
             return jsonify({'msg':'The image is invalid'}), 400
     
@@ -225,18 +251,60 @@ def modify_product(product_id):
 
         return jsonify({'msg':f'The product {product_id} has been satisfactorily modified',
                     'data': product.serialize()}), 201
-    except Exception as e: return jsonify({'error': str(e)}),
+    except Exception as e: 
+        return jsonify({'error': str(e)}), 500
 
-@app.route('/Obtain_specific_product/<int:product_id', mehtods=['GET'])
+@app.route('/obtain_specific_product/<int:product_id>', methods=['GET'])
 @jwt_required()
-def Obtain_specific_product(product_id):
+def obtain_specific_product(product_id):
     try:
+        current_user =get_jwt_identity() 
+
         specific_product=Products.query.get(product_id)
         if not specific_product:
             return jsonify({'msg':f'Product {product_id} not found'}),404
+        
         return jsonify({'msg':'Product found satisfactorily',
                         'data': specific_product.serialize()}),200
-    except Exception as e: return jsonify({'error': str(e)}),500
+    except Exception as e: 
+        return jsonify({'error': str(e)}),500
+
+@app.route('/obtain_all_products', methods=['GET'])
+@jwt_required()
+def obtain_all_products():
+    try:
+        current_user=get_jwt_identity()
+        
+        product_id = request.args.get('id')
+        product_name = request.args.get('name')
+        product_description = request.args.get('description')
+        product_stocktype = request.args.get('stocktype')
+
+        query = Products.query
+
+        if product_id:
+            query = query.filter_by(id=product_id)
+        if product_name:
+            query = query.filter_by(name=product_name)
+        if product_description:
+            query = query.filter(Products.description.like(f'%{product_description}%'))
+        if product_stocktype:
+            query = query.filter_by(stocktype=StockType(product_stocktype))
+
+        query = query.order_by(Products.id)
+        products = query.all()
+        
+        if not products:
+            return jsonify({'msg':'Product not found'}), 404
+        
+        products_serialize=[]
+        for product in products:
+            products_serialize.append(product.serialize())
+        
+        return jsonify({'msg':'Products found',
+                            'data': products_serialize}),200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/private', methods=['GET'])
 @jwt_required()
