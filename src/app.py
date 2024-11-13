@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db, User, Products, StockType, UserType
+from api.models import db, User, Products, StockType, UserType, Order, OrderDetail
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -15,9 +15,10 @@ from flask_jwt_extended import JWTManager
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import create_access_token
+import datetime
+from datetime import timedelta
 
 from flask_bcrypt import Bcrypt
-
 from flask_cors import CORS
 
 # from models import Person
@@ -108,8 +109,8 @@ def signup():
         encrypted_password=bcrypt.generate_password_hash(body['password']).decode('utf-8')
     
         new_user=User(
-            email=body['email'],
-            username=body['username'],
+            email=email,
+            username=username,
             password=encrypted_password,
             usertype=UserType.user,
             is_active=True
@@ -146,7 +147,8 @@ def login():
         if password_is_true is False:
             return jsonify({'msg':'Invalid password or email'}), 401
     
-        token=create_access_token(identity=user.email)
+        expires = timedelta(hours=4)
+        token=create_access_token(identity=user.email, expires_delta = expires)
 
         return jsonify({'msg':'ok',
                     'jwt_token':token}), 200
@@ -155,9 +157,13 @@ def login():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/create_product', methods=['POST'])
-#RUTA ADMIN:
+@jwt_required()
 def create_product():
     try:
+        current_user= get_jwt_identity()
+        user= User.query.filter_by(email=current_user).first()
+        if user.usertype != UserType.admin:
+            return jsonify({'msg': 'Access forbidden: Admins only'}), 403
         
         body = request.get_json(silent=True)
         if not body:
@@ -188,7 +194,7 @@ def create_product():
             description=description,
             price=price,
             stock=stock,
-            stocktype=stocktype,
+            stocktype=stocktype(stocktype),
             image=image
         )
         db.session.add(new_product)
@@ -201,9 +207,13 @@ def create_product():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/delete_product/<int:product_id>', methods=['DELETE'])
-#RUTA ADMIN:
+@jwt_required()
 def delete_product(product_id):
 
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user).first()
+    if user.usertype != UserType.admin:
+        return jsonify({'msg': 'Access forbidden: Admins only'}), 403
     product = Products.query.get(product_id)
 
     if  not product:
@@ -212,13 +222,17 @@ def delete_product(product_id):
     db.session.delete(product)
     db.session.commit()
 
-    return jsonify({'msg':f'Article {product_id} has been successfully removed'}), 200
+    return jsonify({'msg':'Article has been successfully removed'}), 200
 
 @app.route('/modify_product/<int:product_id>', methods=['PUT'])
-#RUTA ADMIN:
+@jwt_required()
 def modify_product(product_id):
     try:
-        
+        current_user = get_jwt_identity()
+        user = User.query.filter_by(email=current_user).first()
+        if user.usertype != UserType.admin:
+            return jsonify({'msg': 'Access forbidden: Admins only'}), 403
+
         body=request.get_json(silent=True)
         product=Products.query.get(product_id)
     
@@ -257,9 +271,8 @@ def modify_product(product_id):
 @app.route('/obtain_specific_product/<int:product_id>', methods=['GET'])
 @jwt_required()
 def obtain_specific_product(product_id):
-    try:
-        current_user =get_jwt_identity() 
-
+    try: 
+        
         specific_product=Products.query.get(product_id)
         if not specific_product:
             return jsonify({'msg':f'Product {product_id} not found'}),404
@@ -273,7 +286,6 @@ def obtain_specific_product(product_id):
 @jwt_required()
 def obtain_all_products():
     try:
-        current_user=get_jwt_identity()
         
         product_id = request.args.get('id')
         product_name = request.args.get('name')
@@ -305,6 +317,93 @@ def obtain_all_products():
                             'data': products_serialize}),200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/new_order', methods=['POST'])
+@jwt_required()
+def new_order():
+    try:
+        current_user= get_jwt_identity()
+        user = User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg':'User Not Found'}), 404
+        
+        body = request.get_json(silent=True)
+        if not body:
+            return jsonify({'msg': 'All fields are required'}), 400
+    
+        new_order = Order(
+            date=datetime.date.today(),
+            user_id=user.id
+        )
+        db.session.add(new_order)
+        db.session.commit()
+
+        return jsonify({'msg': 'Order successfully created',
+                        'data': new_order.serialize()}), 201
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/get_orders', methods=['GET'])
+@jwt_required()
+def get_orders():
+    try:
+        current_user=get_jwt_identity()
+        user = User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg': 'User Not Found'}), 404
+    
+        orders = Order.query.filter_by(user_id=user.id).all()
+        orders_serialize = []
+        for order in orders:
+            orders_serialize.append(order.serialize())
+
+        return jsonify({'msg': 'Orders successfully obtained',
+                        'data': orders_serialize}), 200
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/obtain_specific_order/<int:order_id>', methods=['GET'])
+@jwt_required()
+def obtain_specific_order(order_id):
+    try:
+        current_user= get_jwt_identity()
+        user=User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg': 'User Not Found'}), 404
+        
+        order=Order.query.filter_by(id=order_id, user_id=user.id).first()
+        if not order:
+            return jsonify({'msg': f'Order {order_id} not found'}), 404
+        
+        return jsonify({'msg': 'Order successfully obtained',
+                        'data': order.serialize()}), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/delete_order/<int:order_id>', methods=['DELETE'])
+@jwt_required()
+def delete_order(order_id):
+    try:
+        current_user=get_jwt_identity()
+        user = User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg': 'User Not Found'}), 404
+        
+        order=Order.query.filter_by(id=order_id, user_id=user.id).first()
+        if not order:
+            return jsonify({'msg': f'Order {order_id} not found'}), 404
+        
+        db.session.delete(order)
+        db.session.commit()
+        return jsonify({'msg': 'Order successfully removed'}), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 
 @app.route('/private', methods=['GET'])
 @jwt_required()
