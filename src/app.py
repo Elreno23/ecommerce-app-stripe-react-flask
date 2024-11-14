@@ -177,17 +177,17 @@ def create_product():
         image=body.get('image')
      
         if not name:
-            return jsonify({'msg': 'The name is invalid'}), 400
+            return jsonify({'msg': 'The name field is required'}), 400
         if not description:
-            return jsonify({'msg': 'Description is invalid'}), 400
+            return jsonify({'msg': 'Description field is required'}), 400
         if not price:
-            return jsonify({'msg': 'The price is invalid'}), 400
+            return jsonify({'msg': 'The price field is required'}), 400
         if not stock:
-            return jsonify({'msg': 'The stock is invalid'}), 400
+            return jsonify({'msg': 'The stock field is required'}), 400
         if not stocktype:
-            return jsonify({'msg': 'The stocktype is invalid'}), 400
+            return jsonify({'msg': 'The stocktype field is required'}), 400
         if not image:
-            return jsonify({'msg': 'The image is invalid'}), 400
+            return jsonify({'msg': 'The image field is required'}), 400
     
         new_product = Products(
             name=name,
@@ -249,17 +249,17 @@ def modify_product(product_id):
         product.image=body.get('image')
 
         if not product.name:
-            return jsonify({'msg':'The name is invalid'}), 400
+            return jsonify({'msg':'The name field is required'}), 400
         if not product.description:
-            return jsonify({'msg':'The description is invalid'}), 400
+            return jsonify({'msg':'The description field is required'}), 400
         if not product.price:
-            return jsonify({'msg':'The price is invalid'}), 400
+            return jsonify({'msg':'The price field is required'}), 400
         if not product.stock:
-            return jsonify({'msg':'The stock is invalid'}), 400
+            return jsonify({'msg':'The stock field is required'}), 400
         if not product.stocktype:
-            return jsonify({'msg':'The stocktype is invalid'}),400
+            return jsonify({'msg':'The stocktype field is required'}),400
         if not product.image:
-            return jsonify({'msg':'The image is invalid'}), 400
+            return jsonify({'msg':'The image field is required'}), 400
     
         db.session.commit()
 
@@ -399,11 +399,159 @@ def delete_order(order_id):
         db.session.delete(order)
         db.session.commit()
         return jsonify({'msg': 'Order successfully removed'}), 200
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/new_order_detail', methods=['POST'])
+@jwt_required()
+def new_order_detail():
+    try:
+        current_user= get_jwt_identity()
+        user=User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg':'User Not Found'}), 404
 
+        body=request.get_json(silent=True)
+        if not body:
+            return jsonify({'msg':'All fields are required'}), 400
+
+        product_id=body.get('product_id')
+        order_id=body.get('order_id')
+        quantity=body.get('quantity')
+    
+        if not product_id:
+            return jsonify({'msg': 'The product_id field is required'}), 400
+        if not order_id:
+            return jsonify({'msg': 'The order_id field is required'}), 400
+        if not quantity:
+            return jsonify({'msg':'The quantity field is required'}), 400
+
+        product = Products.query.filter_by(id=product_id).first()
+        if not product:
+            return jsonify({'msg': 'Product Not Found'}), 404
+        
+        order = Order.query.filter_by(id=order_id).first()
+        if not order:
+            return jsonify({'msg': 'Order Not Found'}), 404
+
+        price = product.price * quantity
+        
+        new_order_detail = Order(
+            product_id=product_id,
+            order_id=order_id,
+            quantity=quantity,
+            price=price
+        )
+
+        db.session.add(new_order_detail)
+        db.session.commit()
+
+        return jsonify({'msg':'Order detail created successfully',
+                        'data':new_order_detail.serialize()}), 201
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/update_order_detail/<int:detail_id>', methods=['PUT'])
+@jwt_required()
+def update_order_detail(detail_id):
+    try:
+        current_user = get_jwt_identity()
+        user = User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg': 'User Not Found'}), 404
+        
+        body = request.get_json(silent=True)
+        if not body:
+            return jsonify({'msg': 'All fields are required'}), 400
+        
+        order_detail = OrderDetail.query.filter_by(id=detail_id).first()
+        if not order_detail:
+            return jsonify({'msg': 'Order Detail Not Found'}), 404
+
+        product_id = body.get('product_id')
+        order_id = body.get('order_id')
+        quantity = body.get('quantity')
+
+        if product_id:
+            product = Products.query.filter_by(id=product_id).first()
+            if not product:
+                return jsonify({'msg': 'Product Not Found'}), 404
+            order_detail.product_id = product_id
+    
+        if order_id:
+            order = Order.query.filter_by(id=order_id).first()
+            if not order:
+                return jsonify({'msg': 'Order Not Found'}), 404
+            order_detail.order_id = order_id
+
+        if quantity:
+            order_detail.quantity = quantity
+            if not quantity:
+                return jsonify({'msg': 'The quantity field is required'}), 400
+
+        # Calcular el precio basado en la cantidad y el precio unitario del producto
+        if product_id or quantity:
+            product = Products.query.filter_by(id=order_detail.product_id).first()
+            if product:
+                order_detail.price = product.price * order_detail.quantity
+        
+        db.session.commit()
+
+        return jsonify({'msg': 'Order detail updated successfully', 
+                        'data': order_detail.serialize()}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/delete_detail_order<int:detail_id>', methods=['DELETE'])
+@jwt_required()
+def delete_detail_order(detail_id):
+    try:
+        current_user = get_jwt_identity()
+        user = User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg':'User Not Found'}), 404
+
+        order_detail = OrderDetail.query.filter_by(id=detail_id).first()
+        if not order_detail:
+            return jsonify({'msg': f'Order detail {detail_id} Not Found'}), 404
+        
+        db.session.delete(order_detail)
+        db.session.commit()
+
+        return jsonify({'msg':'Order detail successfully removed'}),200
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/get_detail_orders', methods=['GET'])
+@jwt_required()
+def get_detail_orders():
+    try:
+        current_user=get_jwt_identity()
+        user=User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg': 'User Not Found'}), 404
+        orders = Order.query.filter_by(user_id=user.id).all()
+        if not orders:
+            return jsonify({'msg': 'No orders found for this user'}),404
+
+        detail_orders=[]
+        for order in orders:
+            details = OrderDetail.query.filter_by(order_id=orders.id).all()
+            detail_orders.extend(details)# extend: Agrega cada detalle de orden individualmente a la lista
+
+        detail_orders_serialize=[]
+        for detail in detail_orders:
+            detail_orders_serialize.append(detail.serialize())
+
+        return jsonify({'msg':'All order details successfully obtained',
+                            'data': detail_orders_serialize}),200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/private', methods=['GET'])
 @jwt_required()
