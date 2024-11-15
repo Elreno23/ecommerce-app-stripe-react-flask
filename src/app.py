@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db, User, Products, StockType, UserType, Order, OrderDetail
+from api.models import db, User, Products, StockType, UserType, Order, OrderDetail, Cart, CartItem
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -552,6 +552,30 @@ def get_detail_orders():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/get_specific_details<int:order_id>', methods=['GET'])
+@jwt_required()
+def get_specific_details(order_id):
+    try:
+        current_user=get_jwt_identity()
+        user=User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg': 'User Not Found'}),404
+
+        order=Order.query.filter_by(id=order_id, user_id=user.id).first()
+        if not order:
+            return jsonify({'msg': f'Order {order_id} Not Found'}),404
+
+        details_order=OrderDetail.query.filter_by(order_id=order_id).all()
+        details_serialize = []
+        for detail in details_order:
+            details_serialize.append(detail.serialize())
+
+        return jsonify({'msg':'Order details successfully obtained',
+                        'data':details_serialize}),200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}),500
 
 @app.route('/private', methods=['GET'])
 @jwt_required()

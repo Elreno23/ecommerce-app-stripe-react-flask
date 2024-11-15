@@ -24,6 +24,7 @@ class User(db.Model):
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
     usertype = db.Column(Enum(UserType), nullable=False)
     orders_relationship = db.relationship('Order', back_populates='user_relationship')
+    cart=db.relationship('Cart', back_populates='user_relationship', uselist=False)
 
     def __repr__(self):
         return f'<User: {self.email}>'
@@ -35,6 +36,42 @@ class User(db.Model):
             'email': self.email,
             'usertype': self.usertype.value
             # do not serialize the password, its a security breach
+        }
+
+class Cart(db.Model):
+    __tablename__='cart'
+    id=db.Column(db.Integer, primary_key=True)
+    user_id=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_relationship=db.relationship('User', back_populates='cart')
+    cart_items=db.relationship('CartItem', back_populates='cart')
+
+    def __repr__(self):
+        return f'<Cart: {self.id}, User: {self.user_id}>'
+    
+    def serialize(self):
+        return {
+            'id':self.id,
+            'user_id':self.user_id
+        }
+
+class CartItem(db.Model):
+    __tablename__='cart_item'
+    id=db.Column(db.Integer, primary_key=True)
+    cart_id=db.Column(db.Integer, db.ForeignKey('cart.id'), nullable=False)
+    product_id=db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    quantity=db.Column(db.Integer, nullable=False)
+    cart=db.relationship('Cart', back_populates='cart_items')
+    product=db.relationship('Products')
+
+    def __repr__(self):
+        return f'<CartItem: {self.id}, Cart{self.cart_id}>'
+
+    def serialize(self):
+        return{
+            'id':self.id,
+            'cart_id':self.cart_id,
+            'product_id':self.product_id,
+            'quantity':self.quantity
         }
     
 class Products(db.Model):
