@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db, User, Products, StockType, UserType, Order, OrderDetail, Cart, CartItem
+from api.models import db, User, Products, StockType, UserType, Order, OrderDetail, Cart, CartItem,Payment,PaymentStatus
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -17,6 +17,8 @@ from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import create_access_token
 import datetime
 from datetime import timedelta
+import stripe
+
 
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
@@ -28,10 +30,13 @@ static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../public/')
 app = Flask(__name__)
 app.url_map.strict_slashes = False
+
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
-app.config["JWT_SECRET_KEY"] = os.getenv("jwt-Token-key")
 CORS(app)
+
+app.config["JWT_SECRET_KEY"] = os.getenv("jwt-Token-key")
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 # database condiguration
 db_url = os.getenv("DATABASE_URL")
@@ -156,6 +161,108 @@ def login():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/profile', methods=['GET'])
+@jwt_required()
+def profile():
+    try:
+        current_user=get_jwt_identity()
+        user=User.query.filter_by(email=current_user).first()
+        if not User:
+            return jsonify({'User Not Found'}),404
+        
+        cart=cart.query.filter_by(user_id=user.id).first()
+        cart_items_serialize=[]
+        if cart:
+            for item in cart.cart_items:
+                cart_items_serialize.append(item.serialize())
+            else: 
+                cart_items_serialize =[]
+
+        orders = Order.query.filter_by(user_id=user.id).first()
+        orders_serialize=[]
+        if order:
+            for order in orders:
+                orders_serialize.append(order.serialize())
+            else:
+                orders_serialize=[]
+
+        return jsonify({'msg':'Satisfactorily obtained data',
+                        'cart':{
+                            'id': cart.id if cart else None, #operador ternario python.
+                            'items': cart_items_serialize
+                            },
+                            'orders':orders_serialize }),200
+    except Exception as e:
+        return jsonify({'error':str(e)}),500
+
+@app.route('/update_profile_data', methods=['PUT'])
+@jwt_required()
+def update_profile_data():
+    try:
+        current_user=get_jwt_identity()
+        user=User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg':'User Not Found'}),404
+
+        body=request.get_json(silent=True)
+        if not body:
+            return jsonify({'msg': 'All fields are required'}),400
+       
+        password_is_true=bcrypt.check_password_hash(user.password, body.get('password'))
+        if password_is_true is False:
+            return jsonify({'msg':'Invalid password '}), 401
+
+    #Si el campo username no está usamos el que está por defceto, no hacen falta validaciones adicionales.
+        user.username=body.get('username', user.username) 
+        user.email=body.get('email', user.email)
+
+        new_password = body.get('new_password') 
+        if new_password: 
+            user.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+
+        db.session.commit()
+
+        return jsonify({'msg':'Successfully updated data'}),200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}),500
+
+@app.route('/payment_intent', methods=['POST'])
+@jwt_required()
+def payment_intent():
+    try:
+        current_user=get_jwt_identity()
+        user=User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg':'User Not Found'}),404
+        body=request.get_json(silent=True)
+        if not body:
+            return jsonify({'msg': 'All fields are required'}),400
+        amount=body.get('amount')
+        if not amount:
+            return jsonify({'msg':'The Amount field is required'}),400
+        #Creamos un payment(prueba)
+        intent = stripe.PaymentIntent.create(
+            amount=amount,
+            currency='usd'
+        )
+        #instanciamos el pago y guardamos
+        payment=Payment(
+            user_id=user.id,
+            amount=amount,
+            currency='usd',
+            status=PaymentStatus.pending,
+            payment_intent_id=intent['id'],
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        )
+        db.session.add(payment)
+        db.session.commit()
+        return jsonify({'clientSecret': intent['client_secret']}),200
+    
+    except Exception as e:
+        return jsonify({'error':str(e)}),500
+    
 @app.route('/create_product', methods=['POST'])
 @jwt_required()
 def create_product():
@@ -505,7 +612,7 @@ def update_order_detail(detail_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/delete_detail_order<int:detail_id>', methods=['DELETE'])
+@app.route('/delete_detail_order/<int:detail_id>', methods=['DELETE'])
 @jwt_required()
 def delete_detail_order(detail_id):
     try:
@@ -553,7 +660,7 @@ def get_detail_orders():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/get_specific_details<int:order_id>', methods=['GET'])
+@app.route('/get_specific_details/<int:order_id>', methods=['GET'])
 @jwt_required()
 def get_specific_details(order_id):
     try:
@@ -576,6 +683,129 @@ def get_specific_details(order_id):
 
     except Exception as e:
         return jsonify({'error': str(e)}),500
+    
+@app.route('/view_cart/<int:user_id>', methods=['GET'])
+@jwt_required()
+def view_cart(user_id):
+    try:
+        current_user=get_jwt_identity()
+        user=User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg':'User Not Found'}),404
+        
+        cart = Cart.query.filter_by(user_id=user.id).first()
+        if not cart:
+            return jsonify({'msg':'Cart not found or does not belong to the user'}),404
+
+        cart_items_serialize = []
+        for item in cart.cart_items:
+            cart_items_serialize.append(item.serialize())
+        
+        return jsonify({'msg':'Successfully obtained items',
+                        'data': cart_items_serialize}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}),500
+    
+@app.route('/add_item_cart', methods=['POST'])
+@jwt_required()
+def add_item_cart():
+    try:
+        current_user=get_jwt_identity()
+        user=User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg': 'User Not Found'}),404
+        
+        body=request.get_json(silent=True)
+        if not body:
+            return jsonify({'msg': 'All fields are required'}),400
+        
+        product_id=body.get('product_id')
+        quantity=body.get('quantity')
+        if not product_id or not quantity or quantity <=0:
+            return jsonify({'msg':'Product ID and a positive quantity are required'}),400
+    #Verificamos la existencia del producto.
+        product = Products.query.filter_by(id=product_id).first()
+        if not product:
+            return jsonify({'msg': 'Product Not Found'}),404
+    #obtenemos o creamos el carrito del usuario.
+        cart=Cart.query.filter_by(user_id=user.id).first()
+        if not cart:
+            cart = Cart(user_id=user.id)
+            db.session.add(cart)
+            db.session.commit()
+    #añadimos o actualizamos el item en el carrito.
+        cart_item=CartItem.query.filter_by(cart_id=cart.id, product_id=product_id).first()
+        if cart_item:
+            cart_item.quantity += quantity   
+        else:
+            cart_item=CartItem(cart_id=cart.id, product_id=product_id, quantity=quantity)
+            db.session.add(cart_item)
+
+        db.session.commit()
+        return jsonify({'msg':'Item successfully added to cart'}),200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}),500
+    
+@app.route('/update_item_cart/<int:cart_item_id>', methods=['PUT'])
+@jwt_required()
+def update_item_cart(cart_item_id):
+    try:
+        current_user=get_jwt_identity()
+        user=User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg':'User Not Found'}),404
+        
+        body=request.get_json(silent=True)
+        if not body:
+            return jsonify({'msg':'All fields are required'}),400
+        
+        quantity=body.get('quantity')
+        if not quantity or quantity <= 0:
+            return jsonify({'msg': 'A positive quantity is required'}), 400
+        #Obtenemos el carrito especifico del usuario.
+        cart=Cart.query.filter_by(user_id=user.id).first()
+        if not cart:
+            return jsonify({'msg':'Cart Not Found'}),404
+        #Buscamos el item especifico del carrito.
+        cart_item=CartItem.query.filter_by(id=cart_item_id, cart_id=cart.id).first()
+        if not cart_item:
+            return jsonify({'msg':'CartItem Not Found'}),404
+        #Actualizamos la cantidad.
+        cart_item.quantity = quantity
+        db.session.commit()
+
+        return jsonify({'msg':'Item quantity successfully updated'}),200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}),500
+    
+@app.route('/delete_item_cart/<int:cart_item_id>',methods=['DELETE'])
+@jwt_required()
+def delete_item_cart(cart_item_id):
+    try:
+        current_user=get_jwt_identity()
+        user=User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg':'User Not found'}),404
+        
+        cart=Cart.query.filter_by(user_id=user.id).first()
+        if not cart:
+            return jsonify({'msg':'Cart Not Found'}),404
+        
+        cart_item=CartItem.query.filter_by(id=cart_item_id, cart_id=cart.id).first()
+        if not cart_item:
+            return jsonify({'msg': 'CartItem Not Found'}), 404
+        
+        db.session.delete(cart_item)
+        db.session.commit()
+
+        return jsonify({'msg': 'Item successfully deleted from cart'}),200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}),500
+    
 
 @app.route('/private', methods=['GET'])
 @jwt_required()
