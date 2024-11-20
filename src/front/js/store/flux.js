@@ -1,6 +1,8 @@
 import { Navigate } from "react-router-dom";
 
 const getState = ({ getStore, getActions, setStore }) => {
+	const token = localStorage.getItem("jwt_token");
+	const url = process.env.BACKEND_URL;
 	return {
 		store: {
 			message: null,
@@ -15,7 +17,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 					background: "white",
 					initial: "white"
 				}
-			]
+			],
+			stock: [],
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
@@ -50,7 +53,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 				setStore({ demo: demo });
 			},
 			private: async () => { //Función que ejecuta el fetch private(Estado global).
-				const token = localStorage.getItem("jwt_token"); //Obtengo el token almacenado en localStorage.
 				if (!token) { //Si no hay token paramos la ejecución.
 					return null
 				}
@@ -71,7 +73,29 @@ const getState = ({ getStore, getActions, setStore }) => {
 					alert("Error http!");
 
 				}
-			}
+			},
+			stock: async () => {
+				if (!token) {
+					return null
+				}
+				try {
+					const resp = await fetch(`${url}/obtain_all_products`, {
+						headers: {
+							"Content-Type": "application/json",
+							"Authorization": `Bearer ${token}`
+						}
+					});
+					if (!resp.ok) {
+						throw new Error("Error receiving data!")
+					}
+					const result = await resp.json();
+					setStock({ stock: result.data })
+				} catch (err) {
+					console.error('There was a problem with the fetch operation:', err);
+					alert('An error occurred while fetching data. Please try again later.');
+
+				}
+			},
 		}
 	};
 };

@@ -37,6 +37,7 @@ CORS(app)
 
 app.config["JWT_SECRET_KEY"] = os.getenv("jwt-Token-key")
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+stripe_publishable_key = os.getenv("STRIPE_PUBLISHABLE_KEY")
 
 # database condiguration
 db_url = os.getenv("DATABASE_URL")
@@ -316,21 +317,24 @@ def create_product():
 @app.route('/delete_product/<int:product_id>', methods=['DELETE'])
 @jwt_required()
 def delete_product(product_id):
+    try:
+        current_user = get_jwt_identity()
+        user = User.query.filter_by(email=current_user).first()
+        if user.usertype != UserType.admin:
+            return jsonify({'msg': 'Access forbidden: Admins only'}), 403
+        product = Products.query.get(product_id)
 
-    current_user = get_jwt_identity()
-    user = User.query.filter_by(email=current_user).first()
-    if user.usertype != UserType.admin:
-        return jsonify({'msg': 'Access forbidden: Admins only'}), 403
-    product = Products.query.get(product_id)
+        if  not product:
+            return ({'msg':f'Product {product_id} not found'}), 404
+        
+        db.session.delete(product)
+        db.session.commit()
 
-    if  not product:
-        return ({'msg':f'Product {product_id} not found'}), 404
+        return jsonify({'msg':'Article has been successfully removed'}), 200
     
-    db.session.delete(product)
-    db.session.commit()
-
-    return jsonify({'msg':'Article has been successfully removed'}), 200
-
+    except Exception as e:
+        return jsonify({'error':str(e)}),500
+    
 @app.route('/modify_product/<int:product_id>', methods=['PUT'])
 @jwt_required()
 def modify_product(product_id):
@@ -379,6 +383,10 @@ def modify_product(product_id):
 @jwt_required()
 def obtain_specific_product(product_id):
     try: 
+        current_user=get_jwt_identity()
+        user=User.query.fiter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg': 'User Not Found'}),404
         
         specific_product=Products.query.get(product_id)
         if not specific_product:
@@ -393,6 +401,10 @@ def obtain_specific_product(product_id):
 @jwt_required()
 def obtain_all_products():
     try:
+        current_user=get_jwt_identity()
+        user=User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({'msg':'User Not Found'}),404
         
         product_id = request.args.get('id')
         product_name = request.args.get('name')
@@ -647,7 +659,7 @@ def get_detail_orders():
 
         detail_orders=[]
         for order in orders:
-            details = OrderDetail.query.filter_by(order_id=orders.id).all()
+            details = OrderDetail.query.filter_by(order_id=order.id).all()
             detail_orders.extend(details)# extend: Agrega cada detalle de orden individualmente a la lista
 
         detail_orders_serialize=[]
@@ -684,9 +696,9 @@ def get_specific_details(order_id):
     except Exception as e:
         return jsonify({'error': str(e)}),500
     
-@app.route('/view_cart/<int:user_id>', methods=['GET'])
+@app.route('/view_cart', methods=['GET'])
 @jwt_required()
-def view_cart(user_id):
+def view_cart():
     try:
         current_user=get_jwt_identity()
         user=User.query.filter_by(email=current_user).first()
