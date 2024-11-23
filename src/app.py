@@ -106,10 +106,10 @@ def signup():
             return jsonify({'msg':'The password field is required'}), 400
     
         user_email=User.query.filter_by(email=body['email']).first()
-        username=User.query.filter_by(username=body['username']).first()
+        username_from_db=User.query.filter_by(username=body['username']).first()
         if user_email:
             return jsonify({'msg':'The email is already in use, please choose another one'}), 400
-        if username:
+        if username_from_db:
             return jsonify({'msg':'The username is already in use, please choose another one'}), 400
     
         encrypted_password=bcrypt.generate_password_hash(body['password']).decode('utf-8')
@@ -124,7 +124,8 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
     
-        return jsonify({'msg':'Successfully registered user'}), 201
+        return jsonify({'msg': 'Successfully registered user', 
+                       'data': new_user.serialize() }), 201
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -146,7 +147,7 @@ def login():
     
         user=User.query.filter_by(email=body['email']).first()
         if not user:
-            return jsonify({'msg':'Invalid password or email'}), 401
+            return jsonify({'msg':'Invalid credentials'}), 401
     
         db_password=user.password
         password_is_true=bcrypt.check_password_hash(db_password, body['password'])
@@ -168,26 +169,27 @@ def profile():
     try:
         current_user=get_jwt_identity()
         user=User.query.filter_by(email=current_user).first()
-        if not User:
+        if not user:
             return jsonify({'User Not Found'}),404
         
-        cart=cart.query.filter_by(user_id=user.id).first()
-        cart_items_serialize=[]
+        cart=Cart.query.filter_by(user_id=user.id).first()
+        cart_items_serialize = None
         if cart:
+            cart_items_serialize=[]
             for item in cart.cart_items:
                 cart_items_serialize.append(item.serialize())
-            else: 
-                cart_items_serialize =[]
+            
 
-        orders = Order.query.filter_by(user_id=user.id).first()
-        orders_serialize=[]
-        if order:
+        orders = Order.query.filter_by(user_id=user.id).all()
+        orders_serialize = None
+        if orders:
+            orders_serialize=[]
             for order in orders:
                 orders_serialize.append(order.serialize())
-            else:
-                orders_serialize=[]
+            
 
         return jsonify({'msg':'Satisfactorily obtained data',
+                        'userType': user.usertype.value,
                         'cart':{
                             'id': cart.id if cart else None, #operador ternario python.
                             'items': cart_items_serialize
@@ -297,12 +299,18 @@ def create_product():
         if not image:
             return jsonify({'msg': 'The image field is required'}), 400
     
+        try:
+            # Convertimos el stocktype a un valor del Enum, asegurándonos de que sea válido
+            stocktype_enum = StockType[stocktype.lower()]  # Convertimos el valor a minúsculas
+        except KeyError:
+            return jsonify({'msg': 'Invalid stocktype value'}), 400
+        
         new_product = Products(
             name=name,
             description=description,
             price=price,
             stock=stock,
-            stocktype=stocktype(stocktype),
+            stocktype=stocktype_enum,
             image=image
         )
         db.session.add(new_product)
@@ -320,7 +328,10 @@ def delete_product(product_id):
     try:
         current_user = get_jwt_identity()
         user = User.query.filter_by(email=current_user).first()
-        if user.usertype != UserType.admin:
+        if not user:
+            return jsonify({'msg': 'User Not Found'}),404
+        
+        if not user.usertype != UserType.admin:
             return jsonify({'msg': 'Access forbidden: Admins only'}), 403
         product = Products.query.get(product_id)
 
@@ -352,12 +363,12 @@ def modify_product(product_id):
         if not product:
             return jsonify({'msg':f'Product {product_id} not found'}), 404
     
-        product.name=body.get('name')
-        product.description=body.get('description')
-        product.price=body.get('price')
-        product.stock=body.get('stock')
-        product.stocktype=body.get('stocktype')
-        product.image=body.get('image')
+        product.name=body.get('name',product.name)
+        product.description=body.get('description',product.description)
+        product.price=body.get('price',product.price)
+        product.stock=body.get('stock',product.stock)
+        product.stocktype=body.get('stocktype',product.stocktype)
+        product.image=body.get('image',product.image)
 
         if not product.name:
             return jsonify({'msg':'The name field is required'}), 400
@@ -384,7 +395,7 @@ def modify_product(product_id):
 def obtain_specific_product(product_id):
     try: 
         current_user=get_jwt_identity()
-        user=User.query.fiter_by(email=current_user).first()
+        user=User.query.filter_by(email=current_user).first()
         if not user:
             return jsonify({'msg': 'User Not Found'}),404
         
@@ -413,6 +424,13 @@ def obtain_all_products():
 
         query = Products.query
 
+        if product_stocktype:
+            try:
+                stocktype_enum = StockType[product_stocktype.lower()]  # Convertimos a minúsculas para evitar problemas
+                query = query.filter_by(stocktype=stocktype_enum)  # Filtrar por stocktype
+            except KeyError:
+                return jsonify({'msg': 'Invalid stocktype value'}), 400  # Retornar error si el stocktype no es válido
+
         if product_id:
             query = query.filter_by(id=product_id)
         if product_name:
@@ -433,7 +451,7 @@ def obtain_all_products():
             products_serialize.append(product.serialize())
         
         return jsonify({'msg':'Products found',
-                            'data': products_serialize}),200
+                        'data': products_serialize}),200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -473,6 +491,9 @@ def get_orders():
             return jsonify({'msg': 'User Not Found'}), 404
     
         orders = Order.query.filter_by(user_id=user.id).all()
+        if not orders:
+            return jsonify({'msg': 'No orders found for the user'}), 404
+
         orders_serialize = []
         for order in orders:
             orders_serialize.append(order.serialize())
@@ -494,7 +515,8 @@ def obtain_specific_order(order_id):
         
         order=Order.query.filter_by(id=order_id, user_id=user.id).first()
         if not order:
-            return jsonify({'msg': f'Order {order_id} not found'}), 404
+            return jsonify({'msg': 'No order found for the user'}), 404
+
         
         return jsonify({'msg': 'Order successfully obtained',
                         'data': order.serialize()}), 200
@@ -539,13 +561,16 @@ def new_order_detail():
         order_id=body.get('order_id')
         quantity=body.get('quantity')
     
-        if not product_id:
-            return jsonify({'msg': 'The product_id field is required'}), 400
-        if not order_id:
-            return jsonify({'msg': 'The order_id field is required'}), 400
-        if not quantity:
-            return jsonify({'msg':'The quantity field is required'}), 400
+        if not product_id or not order_id or not quantity:
+            return jsonify({'msg': 'All fields are required'}), 400
 
+        product = Products.query.filter_by(id=product_id).first()
+        if not product:
+            return jsonify({'msg': 'Product Not Found'}), 404
+        
+        if quantity <= 0:
+            return jsonify({'msg': 'Quantity must be greater than zero'}), 400
+        
         product = Products.query.filter_by(id=product_id).first()
         if not product:
             return jsonify({'msg': 'Product Not Found'}), 404
@@ -576,6 +601,7 @@ def new_order_detail():
 @jwt_required()
 def update_order_detail(detail_id):
     try:
+        # Obtener el usuario actual desde el token
         current_user = get_jwt_identity()
         user = User.query.filter_by(email=current_user).first()
         if not user:
@@ -584,38 +610,47 @@ def update_order_detail(detail_id):
         body = request.get_json(silent=True)
         if not body:
             return jsonify({'msg': 'All fields are required'}), 400
-        
+
+        # Buscar el detalle de la orden
         order_detail = OrderDetail.query.filter_by(id=detail_id).first()
         if not order_detail:
             return jsonify({'msg': 'Order Detail Not Found'}), 404
+        
+        # Verificar que el detalle de la orden pertenece al usuario actual
+        if order_detail.order.user_id != user.id:
+            return jsonify({'msg': 'You do not have permission to modify this order detail'}), 403
 
+        # Obtener los campos del cuerpo de la solicitud
         product_id = body.get('product_id')
         order_id = body.get('order_id')
         quantity = body.get('quantity')
+        
+        # Verificar que la cantidad sea mayor a cero
+        if quantity and quantity <= 0:
+            return jsonify({'msg': 'Quantity must be greater than zero'}), 400
 
+        # Consultar y actualizar el producto si se proporciona un product_id
+        product = None
         if product_id:
             product = Products.query.filter_by(id=product_id).first()
             if not product:
                 return jsonify({'msg': 'Product Not Found'}), 404
             order_detail.product_id = product_id
-    
+        
+        # Consultar y actualizar la orden si se proporciona un order_id
         if order_id:
             order = Order.query.filter_by(id=order_id).first()
             if not order:
                 return jsonify({'msg': 'Order Not Found'}), 404
             order_detail.order_id = order_id
 
+        # Actualizar la cantidad y recalcular el precio
         if quantity:
             order_detail.quantity = quantity
-            if not quantity:
-                return jsonify({'msg': 'The quantity field is required'}), 400
-
-        # Calcular el precio basado en la cantidad y el precio unitario del producto
-        if product_id or quantity:
-            product = Products.query.filter_by(id=order_detail.product_id).first()
-            if product:
+            if product:  # Solo recalcular el precio si el producto existe
                 order_detail.price = product.price * order_detail.quantity
         
+        # Guardar los cambios en la base de datos
         db.session.commit()
 
         return jsonify({'msg': 'Order detail updated successfully', 
@@ -623,6 +658,7 @@ def update_order_detail(detail_id):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/delete_detail_order/<int:detail_id>', methods=['DELETE'])
 @jwt_required()
@@ -636,6 +672,9 @@ def delete_detail_order(detail_id):
         order_detail = OrderDetail.query.filter_by(id=detail_id).first()
         if not order_detail:
             return jsonify({'msg': f'Order detail {detail_id} Not Found'}), 404
+        
+        if order_detail.order.user_id != user.id:
+            return jsonify({'msg': 'This order detail does not belong to the current user'}), 403
         
         db.session.delete(order_detail)
         db.session.commit()
@@ -708,15 +747,17 @@ def view_cart():
         cart = Cart.query.filter_by(user_id=user.id).first()
         if not cart:
             return jsonify({'msg':'Cart not found or does not belong to the user'}),404
-
+        print("Cart items:", cart.cart_items) 
         cart_items_serialize = []
         for item in cart.cart_items:
+            print(f"Item: {item}")
             cart_items_serialize.append(item.serialize())
         
         return jsonify({'msg':'Successfully obtained items',
                         'data': cart_items_serialize}), 200
 
     except Exception as e:
+        print("Error:", e)
         return jsonify({'error': str(e)}),500
     
 @app.route('/add_item_cart', methods=['POST'])

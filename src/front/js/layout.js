@@ -4,14 +4,14 @@ import ScrollToTop from "./component/scrollToTop";
 import { BackendURL } from "./component/backendURL";
 
 import Home from "./pages/home";
-import { Demo } from "./pages/demo";
-import { Single } from "./pages/single";
+import Stock from "./component/Stock";
+import StockAdmin from "./component/StockAdmin";
 import injectContext from "./store/appContext";
 
 import { Navbar } from "./component/navbar";
 import { Footer } from "./component/footer";
 import Signup from "./component/Signup";
-import Private from "./component/Private";
+
 
 //create your first component
 const Layout = () => {
@@ -29,7 +29,9 @@ const Layout = () => {
                     <Routes>
                         <Route element={<Home />} path="/" />
                         <Route element={<Signup />} path="/signup" />
-                        <Route element={<Private />} path="/private" />
+                        <Route element={<Stock />} path="/stock" />
+                        <Route element={<StockAdmin />} path="/stock-admin" />
+
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
                     <Footer />

@@ -18,7 +18,7 @@ export const Navbar = () => {
 					<span className="navbar-brand mb-0 h1">Home</span>
 				</Link>
 				<div className="ml-auto">
-					<button onClick={Logout} className="btn btn-primary"><i class="fa-solid fa-right-from-bracket"></i></button>
+					<button onClick={Logout} className="btn btn-primary"><i className="fa-solid fa-right-from-bracket"></i></button>
 				</div>
 			</div>
 		</nav>

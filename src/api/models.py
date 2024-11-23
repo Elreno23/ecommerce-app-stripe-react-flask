@@ -91,7 +91,7 @@ class CartItem(db.Model):
     product_id=db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
     quantity=db.Column(db.Integer, nullable=False)
     cart=db.relationship('Cart', back_populates='cart_items')
-    product=db.relationship('Products')
+    product=db.relationship('Products', back_populates='item')
 
     def __repr__(self):
         return f'<CartItem: {self.id}, Cart{self.cart_id}>'
@@ -118,6 +118,7 @@ class Products(db.Model):
     stocktype = db.Column(Enum(StockType), nullable=False)
     image=db.Column(db.String(200), nullable=False)
     order_details=db.relationship('OrderDetail', back_populates='product_relationship')
+    item = db.relationship('CartItem', back_populates='product')
 
     def __repr__(self):
         return f'<Product: {self.name}>'
