@@ -7,7 +7,7 @@ const Stock = () => {
 
     useEffect(() => {
         actions.getStock();
-    }, [actions]);
+    }, []);
 
     return (
         <div className='container'>

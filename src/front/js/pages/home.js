@@ -1,58 +1,58 @@
-import React from "react";
+import React, { useContext, useState } from "react";
+import { Context } from "../store/appContext";
 import { useNavigate } from "react-router-dom";
 import "../../styles/home.css";
 
 const Home = () => {
-
-	const backUrl = process.env.BACKEND_URL;//Url del fetch
+	const { actions } = useContext(Context);
+	const [loginData, setLoginData] = useState({
+		email: "",
+		password: ""
+	});
 	const navigate = useNavigate();
 
-	const Login = async (event) => {//Función para ejecutar el fetch.
-		event.preventDefault();//Evito el comportamiento del formulario(recarga la página).
-
-		try { //Captura errores, bloquea la ejecución y envia el error a catch.
-			const resp = await fetch(`${backUrl}login`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					"email": document.getElementById("email").value, //Obtengo el valor de email, evitamos estados(app sencillas).
-					"password": document.getElementById("password").value
-				})
-			});
-			console.log(resp);
-
-			if (!resp.ok) {
-				throw new Error(`Error! ${resp}`)
-			}
-			const data = await resp.json();
-			console.log(data);
-
-			if (data.jwt_token && data.msg === "ok") { //Verifico que exista el token y el statusCode sea 0k.
-				localStorage.setItem("jwt_token", data.jwt_token) //Si es así guardo el token en localStorage.
-				navigate('/private')//Me redirige a private.
-			} else {
-				alert("Error logging, try again!")
-			}
-		} catch (err) {//Manejamos errores.
-			console.error(err);
-			alert("Incorrect email or password")
-
-		}
+	const handleChange = (e) => {
+		setLoginData({
+			...loginData, [e.target.name]: e.target.value
+		});
 	};
+
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		const result = await actions.login(loginData);
+		if (result.jwt_token && result.msg === "ok") {
+			localStorage.setItem("jwt_token", result.jwt_token);
+			navigate("/signup")
+		}
+	}
 
 
 	return (
 		<div className='container d-flex flex-column align-items-center' style={{ margin: "10% auto" }}>
 			<div className='d-flex flex-column' style={{ width: "300px", padding: "10px", border: "1px solid gray" }}>
-				<form onSubmit={Login}>
+				<form onSubmit={handleSubmit}>
 					<h1 className='mb-5' style={{ marginLeft: "30%" }}>Login</h1>
 					<div className="mb-3">
-						<label className="form-label">Email address</label>
-						<input type="email" className="form-control" id="email" placeholder="name@example.com" />
+						<label htmlFor="email">Email</label>
+						<input
+							type="email"
+							name="email"
+							value={loginData.email}
+							onChange={handleChange}
+							id="email"
+							placeholder="name@example.com"
+							required />
 					</div>
 					<div className="mb-3">
-						<label className="form-label">Password</label>
-						<input type="password" className="form-control" id="password" placeholder='Enter password' />
+						<label htmlFor="password">Password</label>
+						<input
+							type="password"
+							name="password"
+							value={loginData.password}
+							onChange={handleChange}
+							id="password" placeholder="Enter password"
+							required
+						/>
 					</div>
 					<button className="btn btn-primary mt-5" style={{ width: "40%", marginLeft: "30%" }} type="submit">Login</button>
 				</form>

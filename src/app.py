@@ -105,20 +105,20 @@ def signup():
         if not password:
             return jsonify({'msg':'The password field is required'}), 400
     
-        user_email=User.query.filter_by(email=body['email']).first()
-        username_from_db=User.query.filter_by(username=body['username']).first()
+        user_email=User.query.filter_by(email=email).first()
+        username_from_db=User.query.filter_by(username=username).first()
         if user_email:
             return jsonify({'msg':'The email is already in use, please choose another one'}), 400
         if username_from_db:
             return jsonify({'msg':'The username is already in use, please choose another one'}), 400
     
-        encrypted_password=bcrypt.generate_password_hash(body['password']).decode('utf-8')
+        encrypted_password=bcrypt.generate_password_hash(password).decode('utf-8')
     
         new_user=User(
             email=email,
             username=username,
             password=encrypted_password,
-            usertype=UserType.user,
+            usertype=UserType.admin,#Modificar a user!(pruebas)
             is_active=True
         )
         db.session.add(new_user)
@@ -145,14 +145,14 @@ def login():
         if not password:
             return jsonify({'msg':'The password field is required'}), 400
     
-        user=User.query.filter_by(email=body['email']).first()
+        user=User.query.filter_by(email=email).first()
         if not user:
             return jsonify({'msg':'Invalid credentials'}), 401
     
         db_password=user.password
-        password_is_true=bcrypt.check_password_hash(db_password, body['password'])
-        if password_is_true is False:
-            return jsonify({'msg':'Invalid password or email'}), 401
+        password_is_true=bcrypt.check_password_hash(db_password, password)
+        if not password_is_true:
+            return jsonify({'msg':'Invalid credentials'}), 401
     
         expires = timedelta(hours=4)
         token=create_access_token(identity=user.email, expires_delta = expires)
@@ -173,23 +173,21 @@ def profile():
             return jsonify({'User Not Found'}),404
         
         cart=Cart.query.filter_by(user_id=user.id).first()
-        cart_items_serialize = None
+        cart_items_serialize = []
         if cart:
-            cart_items_serialize=[]
             for item in cart.cart_items:
                 cart_items_serialize.append(item.serialize())
             
-
         orders = Order.query.filter_by(user_id=user.id).all()
-        orders_serialize = None
+        orders_serialize = []
         if orders:
-            orders_serialize=[]
             for order in orders:
                 orders_serialize.append(order.serialize())
             
 
         return jsonify({'msg':'Satisfactorily obtained data',
-                        'userType': user.usertype.value,
+                        'usertype':user.usertype.value,
+                        'username': user.username,
                         'cart':{
                             'id': cart.id if cart else None, #operador ternario python.
                             'items': cart_items_serialize
@@ -317,7 +315,7 @@ def create_product():
         db.session.commit()
     
         return jsonify({'msg': 'Successfully crafted product',
-                    'data': new_product.serialize()}), 201
+                        'data': new_product.serialize()}), 201
     
     except Exception as e: 
         return jsonify({'error': str(e)}), 500
@@ -469,7 +467,7 @@ def new_order():
             return jsonify({'msg': 'All fields are required'}), 400
     
         new_order = Order(
-            date=datetime.date.today(),
+            date=datetime.datetime.now(),
             user_id=user.id
         )
         db.session.add(new_order)
@@ -571,7 +569,7 @@ def new_order_detail():
         if quantity <= 0:
             return jsonify({'msg': 'Quantity must be greater than zero'}), 400
         
-        product = Products.query.filter_by(id=product_id).first()
+        order = Order.query.filter_by(id=product_id).first()
         if not product:
             return jsonify({'msg': 'Product Not Found'}), 404
         
@@ -581,7 +579,7 @@ def new_order_detail():
 
         price = product.price * quantity
         
-        new_order_detail = Order(
+        new_order_detail = OrderDetail(
             product_id=product_id,
             order_id=order_id,
             quantity=quantity,

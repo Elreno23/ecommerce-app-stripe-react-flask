@@ -1,17 +1,58 @@
 import { Navigate } from "react-router-dom";
-
+const token = localStorage.getItem("jwt_token");
+const url = process.env.BACKEND_URL
 const getState = ({ getStore, getActions, setStore }) => {
-	const token = localStorage.getItem("jwt_token");
-	const url = process.env.BACKEND_URL
 	return {
 		store: {
 			message: null,
-			user: null,
-			stock: [],
-			register: [],
-			users: []
+			demo: [
+				{
+					title: "FIRST",
+					background: "white",
+					initial: "white"
+				},
+				{
+					title: "SECOND",
+					background: "white",
+					initial: "white"
+				}
+			],
+			userProfile: null,
+			stock: []
+
 		},
 		actions: {
+			// Use getActions to call a function within a fuction
+			exampleFunction: () => {
+				getActions().changeColor(0, "green");
+			},
+
+			getMessage: async () => {
+				try {
+					// fetching data from the backend
+					const resp = await fetch(process.env.BACKEND_URL + "/api/hello")
+					const data = await resp.json()
+					setStore({ message: data.message })
+					// don't forget to return something, that is how the async resolves
+					return data;
+				} catch (error) {
+					console.log("Error loading message from backend", error)
+				}
+			},
+			changeColor: (index, color) => {
+				//get the store
+				const store = getStore();
+
+				//we have to loop the entire demo array to look for the respective index
+				//and change its color
+				const demo = store.demo.map((elm, i) => {
+					if (i === index) elm.background = color;
+					return elm;
+				});
+
+				//reset the global store
+				setStore({ demo: demo });
+			},
 			/*private: async () => { //Función que ejecuta el fetch private(Estado global).
 				if (!token) { //Si no hay token paramos la ejecución.
 					return null
@@ -33,7 +74,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					alert("Error http!");
 
 				}
-			},*/
+			}*/
 			register: async (usersData) => {
 				try {
 					const resp = await fetch(`${url}signup`, {
@@ -43,17 +84,39 @@ const getState = ({ getStore, getActions, setStore }) => {
 						},
 						body: JSON.stringify(usersData)
 					});
+					console.log(resp);
+
 					if (!resp.ok) {
 						throw new Error("Error receiving data!")
 					}
 					const result = await resp.json();
-					setStore(prevStore => ({
-						users: [...prevStore.users, result.data]  // Agrego el nuevo usuario al array
-					}));
-					return { status: resp.status, data: result.data }; // Devolvemos el resultado para usarlo en el componente.
+					return { status: resp.status, msg: result.msg }
 				} catch (err) {
 					console.error('There was a problem with the fetch operation:', err);
 					alert('Unregistered user, please try again');
+
+				}
+			},
+
+			login: async (loginData) => {
+				try { //Captura errores, bloquea la ejecución y envia el error a catch.
+					const resp = await fetch(`${url}login`, {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify(loginData)
+					});
+					console.log(resp);
+					if (!resp.ok) {
+						throw new Error(`Error receiving data${resp}`)
+					}
+					const result = await resp.json();
+					console.log(result.jwt_token);
+					return result
+				} catch (err) {//Manejamos errores.
+					console.error(err);
+					alert("Incorrect email or password")
 
 				}
 			},
@@ -71,8 +134,10 @@ const getState = ({ getStore, getActions, setStore }) => {
 					if (!resp.ok) {
 						throw new Error("Error receiving data!")
 					}
+
 					const result = await resp.json();
-					setStore({ user: result })
+					setStore({ userProfile: result })
+
 				} catch (err) {
 					console.error('There was a problem with the fetch operation:', err);
 					alert('Error obtaining user information.');
@@ -89,11 +154,20 @@ const getState = ({ getStore, getActions, setStore }) => {
 							"Authorization": `Bearer ${token}`
 						}
 					});
+					console.log(resp);
+
 					if (!resp.ok) {
 						throw new Error("Error receiving data!")
 					}
 					const result = await resp.json();
-					setStore(prevStore => ({ ...prevStore, stock: [...prevStore.stock, result.data] }))
+					console.log(result);
+
+					setStore(prevStore => ({
+						...prevStore,
+						stock: [...prevStore.stock, result.data]
+					}));
+					console.log(result.data);
+
 				} catch (err) {
 					console.error('There was a problem with the fetch operation:', err);
 					alert('An error occurred while fetching data. Please try again later.');
@@ -105,9 +179,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					return null
 				}
 				try {
-					console.log(productData);
 					console.log(token);
-
 
 					const resp = await fetch(`${url}create_product`, {
 						method: "POST",
@@ -121,9 +193,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 						throw new Error("Error receiving data!")
 					}
 					const result = await resp.json();
-					setStore(prevStock => ({
-						stock: [...prevStock, result.data]
-					}));
 					return { status: resp.status, data: result.data };
 				} catch (err) {
 					console.error('There was a problem with the fetch operation:', err);

@@ -14,18 +14,20 @@ const StockAdmin = () => {
         stocktype: ""
     });
     useEffect(() => {//Traemos la info del user para saber si es admin o no!
-        actions.getUserInfo();
-    }, [actions]);
+        if (!store.userProfile) {
+            actions.getUserInfo();
+        }
+    }, [store.userProfile, actions]);
 
     useEffect(() => { //Verificamos si el usuario es admin!
-        if (store.user && store.user.usertype !== "admin") {
+        if (store.userProfile && store.userProfile.usertype !== "admin") {
             navigate("/");
         }
-    }, [store.user, navigate]);
+    }, [store.userProfile, navigate]);
 
     const handleChange = (e) => {
         setProductData({
-            ...productData, [e.target.name]: e.target.value
+            ...productData, [e.target.name]: e.target.value //Propiedades computadas para actualizar propiedades de manera dinamica.
         });
     };
     const handleSubmit = async (e) => {
