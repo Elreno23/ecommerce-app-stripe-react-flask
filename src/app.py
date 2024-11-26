@@ -210,7 +210,7 @@ def update_profile_data():
             return jsonify({'msg': 'All fields are required'}),400
        
         password_is_true=bcrypt.check_password_hash(user.password, body.get('password'))
-        if password_is_true is False:
+        if not password_is_true:
             return jsonify({'msg':'Invalid password '}), 401
 
     #Si el campo username no está usamos el que está por defceto, no hacen falta validaciones adicionales.
@@ -313,6 +313,7 @@ def create_product():
         )
         db.session.add(new_product)
         db.session.commit()
+       
     
         return jsonify({'msg': 'Successfully crafted product',
                         'data': new_product.serialize()}), 201
