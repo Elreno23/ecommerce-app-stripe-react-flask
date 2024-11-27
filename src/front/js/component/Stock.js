@@ -17,7 +17,7 @@ const Stock = () => {
             }
         }
         getStockFetch()
-    }, [products])
+    }, [])
 
 
     return (

@@ -138,30 +138,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				}
 			},
-			addProduct: async (productData) => {
-				if (!token) {
-					return null
-				}
-				try {
-					const resp = await fetch(`${url}create_product`, {
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-							"Authorization": `Bearer ${token}`
-						},
-						body: JSON.stringify(productData)//Almacenar datos en un estado en el componente.
-					});
-					if (!resp.ok) {
-						throw new Error("Error receiving data!")
-					}
-					const result = await resp.json();
-					return { status: resp.status, data: result.data };
-				} catch (err) {
-					console.error('There was a problem with the fetch operation:', err);
-					alert('An error occurred while fetching data. Please try again later.');
-
-				}
-			},
+			
 		}
 	};
 };

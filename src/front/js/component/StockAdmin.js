@@ -1,10 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Context } from '../store/appContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const StockAdmin = () => {
+    const token = localStorage.getItem("jwt_token");
+    const url = process.env.BACKEND_URL
     const { actions, store } = useContext(Context);
+    const { id } = useParams();
     const navigate = useNavigate();
+    const products = store.stock
     const [productData, setProductData] = useState({
         name: "",
         description: "",
@@ -16,25 +20,70 @@ const StockAdmin = () => {
     useEffect(() => {//Traemos la info del user para saber si es admin o no!
         if (!store.userProfile) {
             actions.getUserInfo();
-        }
-    }, [store.userProfile, actions]);
-
-    useEffect(() => { //Verificamos si el usuario es admin!
-        if (store.userProfile && store.userProfile.usertype !== "admin") {
+        } else if (store.userProfile && store.userProfile.usertype !== "admin") {
             navigate("/");
         }
-    }, [store.userProfile, navigate]);
 
+    }, [store.userProfile, actions, navigate, products]);
+
+    const addProduct = async (productData) => {
+        if (!token) {
+            return null
+        }
+        try {
+            const resp = await fetch(`${url}create_product`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(productData)//Almacenar datos en un estado en el componente.
+            });
+            if (!resp.ok) {
+                throw new Error("Error receiving data!")
+            }
+            const result = await resp.json();
+            alert('Product created successfully!')
+            return { status: resp.status, data: result.data };
+        } catch (err) {
+            console.error("There was a problem with the fetch operation:", err);
+            alert("Product not created!");
+
+        }
+    };
+    const deleteProduct = async (id) => { //HAY QUE LLAMARLA
+        if (!token) {
+            return null
+        }
+        try {
+            const resp = await fetch(`${url}delete_product/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            if (!resp.ok) {
+                throw new Error("Error deleting data!");
+            }
+            alert("Product deleted successfully!");
+        } catch (err) {
+            console.error("There was a problem with the fetch operation:", err);
+            alert("Product not removed!")
+        }
+    }
     const handleChange = (e) => {
         setProductData({
             ...productData, [e.target.name]: e.target.value //Propiedades computadas para actualizar propiedades de manera dinamica.
         });
     };
-    const handleSubmit = async (e) => {
+
+
+    const handleSubmit = (e) => {
         console.log("Submitting productData:", productData);
         e.preventDefault();
-        await actions.addProduct(productData)
-    };
+        addProduct(productData)
+    }
 
     return (
         <form onSubmit={handleSubmit}>
@@ -72,6 +121,7 @@ const StockAdmin = () => {
             <button className="btn btn-primary" type="submit">Add Product</button>
         </form>
     )
-}
+} //HAY QUE MOSTRAR EL STOCK.
+
 
 export default StockAdmin
