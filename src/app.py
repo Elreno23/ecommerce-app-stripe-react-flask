@@ -330,7 +330,7 @@ def delete_product(product_id):
         if not user:
             return jsonify({'msg': 'User Not Found'}),404
         
-        if not user.usertype != UserType.admin:
+        if user.usertype != UserType.admin:
             return jsonify({'msg': 'Access forbidden: Admins only'}), 403
         product = Products.query.get(product_id)
 
@@ -795,7 +795,13 @@ def add_item_cart():
             db.session.add(cart_item)
 
         db.session.commit()
-        return jsonify({'msg':'Item successfully added to cart'}),200
+        return jsonify({'msg':'Item successfully added to cart',
+                        'data': { 
+                            'id': product.id, 
+                            'name': product.name, 
+                            'description': product.description, 
+                            'price': product.price, 
+                            'quantity': cart_item.quantity }}),200
 
     except Exception as e:
         return jsonify({'error': str(e)}),500

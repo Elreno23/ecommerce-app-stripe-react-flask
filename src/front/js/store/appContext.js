@@ -32,7 +32,7 @@ const injectContext = PassedComponent => {
 			//state.actions.register(); // <---- calling this function from the flux.js actions
 			//state.actions.addProduct(); // <---- calling this function from the flux.js actions
 			//state.actions.getUserInfo(); // <---- calling this function from the flux.js actions
-			//state.actions.getStock(); // <---- calling this function from the flux.js actions
+			state.actions.getStock(); // <---- calling this function from the flux.js actions
 			//state.actions.login(); // <---- calling this function from the flux.js actions*/
 
 		}, []);

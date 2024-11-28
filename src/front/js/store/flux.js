@@ -17,7 +17,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			],
 			userProfile: null,
-			stock: []
+			stock: [],
+			cart: []
 
 		},
 		actions: {
@@ -138,7 +139,31 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				}
 			},
-			
+			addItemCart: async () => {
+				try {
+					if (!token)
+						return null
+					const resp = await fetch(`${url}add_item_cart`, {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							"Authorization": `Bearer ${token}`
+						},
+						body:JSON.stringify()//PASAR DATOS!
+					});
+					if (!resp.ok) {
+						throw new Error("Error receiving data!")
+					}
+					const result = await resp.json();
+					alert(`Product ${result.product.name} successfully added to cart`)
+					return ({ status: resp.status, msg: result.msg, data: result.product })
+				} catch (err) {
+					console.error('There was a problem with the fetch operation:', err);
+					alert("Unable to add the product to the cart, please try again");
+
+				}
+			},
+
 		}
 	};
 };

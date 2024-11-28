@@ -7,17 +7,10 @@ const Stock = () => {
     const products = store.stock
 
     useEffect(() => {
-        const getStockFetch = async () => {
-            try {
-                await actions.getStock()
-                setIsLoading(false)
-            } catch (err) {
-                console.error("Error with request");
-                setIsLoading(false)
-            }
-        }
-        getStockFetch()
-    }, [])
+       if(products.length > 0){
+        setIsLoading(false)
+       }
+    }, [products])
 
 
     return (
@@ -34,7 +27,7 @@ const Stock = () => {
                             <p className="card-text">{product.description}</p>
                             <p className="card-text">{product.stock}</p>
                             <p className="card-text">{product.stocktype}</p>
-                            <a href="#" className="btn btn-primary">Ver Detalles</a>
+                           <a href="#" className="btn btn-primary">Ver Detalles</a>
                         </div>
                     </div>
                 ))

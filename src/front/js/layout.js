@@ -4,13 +4,15 @@ import ScrollToTop from "./component/scrollToTop";
 import { BackendURL } from "./component/backendURL";
 
 import Home from "./pages/home";
+import Signup from "./component/Signup";
 import Stock from "./component/Stock";
 import StockAdmin from "./component/StockAdmin";
+import StockAdminUpdate from "./component/StockAdminUpdate";
+
 import injectContext from "./store/appContext";
 
 import { Navbar } from "./component/navbar";
 import { Footer } from "./component/footer";
-import Signup from "./component/Signup";
 
 
 //create your first component
@@ -30,7 +32,8 @@ const Layout = () => {
                         <Route element={<Home />} path="/" />
                         <Route element={<Signup />} path="/signup" />
                         <Route element={<Stock />} path="/stock" />
-                        <Route element={<StockAdmin />} path="/stock-admin/:id" />
+                        <Route element={<StockAdmin />} path="/stock-admin" />
+                        <Route element={<StockAdminUpdate />} path="/stock-admin-update/:product_id" />
 
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
