@@ -769,16 +769,21 @@ def add_item_cart():
             return jsonify({'msg': 'User Not Found'}),404
         
         body=request.get_json(silent=True)
+        print("Datos recibidos del frontend:", body)
         if not body:
+            print("Faltan campos requeridos")
             return jsonify({'msg': 'All fields are required'}),400
         
         product_id=body.get('product_id')
-        quantity=body.get('quantity')
+        quantity= int(body.get('quantity'))#Convertimos quantity a entero para agregar la cantidad del producto al mismo item en cart.
         if not product_id or not quantity or quantity <=0:
+            print("ID de producto o cantidad inválida")
             return jsonify({'msg':'Product ID and a positive quantity are required'}),400
+        
     #Verificamos la existencia del producto.
         product = Products.query.filter_by(id=product_id).first()
         if not product:
+            print("Producto no encontrado")
             return jsonify({'msg': 'Product Not Found'}),404
     #obtenemos o creamos el carrito del usuario.
         cart=Cart.query.filter_by(user_id=user.id).first()
@@ -795,6 +800,7 @@ def add_item_cart():
             db.session.add(cart_item)
 
         db.session.commit()
+        print("Producto agregado al carrito:", cart_item)
         return jsonify({'msg':'Item successfully added to cart',
                         'data': { 
                             'id': product.id, 
@@ -804,11 +810,12 @@ def add_item_cart():
                             'quantity': cart_item.quantity }}),200
 
     except Exception as e:
+        print("Error:", e)
         return jsonify({'error': str(e)}),500
     
-@app.route('/update_item_cart/<int:cart_item_id>', methods=['PUT'])
+@app.route('/update_item_cart', methods=['PUT'])
 @jwt_required()
-def update_item_cart(cart_item_id):
+def update_item_cart():
     try:
         current_user=get_jwt_identity()
         user=User.query.filter_by(email=current_user).first()
@@ -819,7 +826,11 @@ def update_item_cart(cart_item_id):
         if not body:
             return jsonify({'msg':'All fields are required'}),400
         
-        quantity=body.get('quantity')
+        item_id=body.get('item_id')
+        if not item_id:
+            return jsonify({'msg':'The product does not exist in the cart'}),404
+        
+        quantity=int(body.get('quantity'))
         if not quantity or quantity <= 0:
             return jsonify({'msg': 'A positive quantity is required'}), 400
         #Obtenemos el carrito especifico del usuario.
@@ -827,7 +838,7 @@ def update_item_cart(cart_item_id):
         if not cart:
             return jsonify({'msg':'Cart Not Found'}),404
         #Buscamos el item especifico del carrito.
-        cart_item=CartItem.query.filter_by(id=cart_item_id, cart_id=cart.id).first()
+        cart_item=CartItem.query.filter_by(id=item_id, cart_id=cart.id).first()
         if not cart_item:
             return jsonify({'msg':'CartItem Not Found'}),404
         #Actualizamos la cantidad.

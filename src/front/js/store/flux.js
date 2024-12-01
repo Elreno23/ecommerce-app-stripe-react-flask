@@ -83,7 +83,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 						},
 						body: JSON.stringify(loginData)
 					});
-					console.log(resp);
 					if (!resp.ok) {
 						throw new Error(`Error receiving data${resp}`)
 					}
@@ -112,6 +111,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 					}
 					const result = await resp.json();
 					setStore({ userProfile: result })
+					console.log(getStore().userProfile);
+
 				} catch (err) {
 					console.error('There was a problem with the fetch operation:', err);
 					alert('Error obtaining user information.');
@@ -139,33 +140,114 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				}
 			},
-			addItemCart: async () => {
+			addItemCart: async (product_id, quantity) => {
 				try {
-					if (!token)
+					if (!token) {
 						return null
+					}
 					const resp = await fetch(`${url}add_item_cart`, {
 						method: "POST",
 						headers: {
 							"Content-Type": "application/json",
 							"Authorization": `Bearer ${token}`
 						},
-						body:JSON.stringify()//PASAR DATOS!
+						body: JSON.stringify(product_id, quantity)
 					});
+
 					if (!resp.ok) {
 						throw new Error("Error receiving data!")
 					}
+
 					const result = await resp.json();
-					alert(`Product ${result.product.name} successfully added to cart`)
-					return ({ status: resp.status, msg: result.msg, data: result.product })
+					console.log(result.data);
+					alert(`Product ${result.data.name} successfully added to cart`)
+					return ({ status: resp.status, msg: result.msg, data: result.data })
 				} catch (err) {
 					console.error('There was a problem with the fetch operation:', err);
 					alert("Unable to add the product to the cart, please try again");
 
 				}
 			},
+			getItemCart: async () => {
+				try {
+					if (!token) {
+						return null
+					}
+					const resp = await fetch(`${url}view_cart`, {
+						headers: {
+							"Content-Type": "application/json",
+							"Authorization": `Bearer ${token}`
+						}
+					});
+					if (!resp.ok) {
+						throw new Error("Error receiving data!")
+					}
+					const result = await resp.json();
+					setStore({ cart: result.data })
 
+				} catch (err) {
+					console.error("There was a problem with the fetch operation:", err);
+					alert("The cart is empty");
+				}
+			},
+			deleteItemCart: async (item_id) => {
+				try {
+					if (!token) {
+						return null
+					}
+					const resp = await fetch(`${url}delete_item_cart/${item_id}`, {
+						method: "DELETE",
+						headers: {
+							"Content-Type": "application/json",
+							"Authorization": `Bearer ${token}`
+						}
+					});
+					if (!resp.ok) {
+						throw new Error("Error receiving data!")
+					};
+					const result = await resp.json();
+					alert("item successfully deleted");
+					return ({ msg: result.msg });
+
+				} catch (err) {
+					console.error("There was a problem with the fetch operation:", err);
+					alert("item not deleted");
+
+				}
+			},
+			updateItemCart: async (quantity, item_id) => {
+				try {
+					if (!token) {
+						return null
+					}
+					const resp = await fetch(`${url}update_item_cart`, {
+						method: "PUT",
+						headers: {
+							"Content-Type": "application/json",
+							"Authorization": `Bearer ${token}`
+						},
+						body: JSON.stringify(quantity, item_id)
+
+					});
+					console.log(resp);
+					if (!resp.ok) {
+						throw new Error("Error receiving data!")
+					};
+					const result = await resp.json();
+					console.log(result);
+					alert("Quantity updated!")
+					return ({ msg: result.msg });
+				} catch (err) {
+					console.error("There was a problem with the fetch operation:", err);
+					alert("Quantity not updated")
+
+				}
+			},
 		}
-	};
+
+
+	}
 };
+
 
 export default getState;

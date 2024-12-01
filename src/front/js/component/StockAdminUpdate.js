@@ -17,12 +17,10 @@ const StockAdminUpdate = () => {
         stocktype: ""
     });
     useEffect(() => {//Traemos la info del user para saber si es admin o no!
-        if (!store.userProfile) {
-            actions.getUserInfo();
-        } else if (store.userProfile && store.userProfile.usertype !== "admin") {
+        if (store.userProfile && store.userProfile.usertype !== "admin") {
             navigate("/");
         }
-    }, [store.userProfile, actions, navigate]);
+    }, [store.userProfile, navigate]);
 
     const handleUpdate = async (e, product_id) => {
         e.preventDefault();
