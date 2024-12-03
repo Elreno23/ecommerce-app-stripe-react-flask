@@ -1,11 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Context } from '../store/appContext';
-import { useParams } from 'react-router-dom';
+import {useNavigate}  from 'react-router-dom';
 
 const Cart = () => {
   const { actions, store } = useContext(Context);
   const [isLoading, setIsLoading] = useState(true);
   const [quantities, setQuantities] = useState({})
+  const navigate = useNavigate();
   const cartItems = store.cart;
   const userData = store.userProfile;
 
@@ -35,7 +36,7 @@ const Cart = () => {
     actions.updateItemCart({ item_id, quantity: newQuantity });
   }
   //actions.updateItemCart(item_id, newQuantity)
-
+ 
   return (
     <div>
 
@@ -47,23 +48,26 @@ const Cart = () => {
           {isLoading ? (
             <div>No products</div>
           ) : (
-            cartItems.map((item, index) => (
-              <li key={index}>
-                <button className="dropdown-item" onClick={(e) => handleItemDelete(e, item.id)}>
-                  <i className="fa-solid fa-trash" ></i>
-                </button>
-                <a className="dropdown-item" href="#">{item.product_name}</a>
-                <input
-                  type="number"
-                  className="dropdown-item"
-                  value={quantities[item.id] || item.quantity}/*propiedades computadas*/
-                  onChange={(e) => handleQuantityChange(e, item.id)}
-                  min="1"
-                />
-                <button onClick={() => handleQuantityUpdate(item.id)}>UPDATE!</button>
-                <img className="dropdown-item" src={item.product_image} alt={item.product_name} />
-              </li>
-            ))
+            <>
+              {cartItems.map((item, index) => (
+                <li key={index}>
+                  <button className="dropdown-item" onClick={(e) => handleItemDelete(e, item.id)}>
+                    <i className="fa-solid fa-trash" ></i>
+                  </button>
+                  <a className="dropdown-item" href="#">{item.product_name}</a>
+                  <input
+                    type="number"
+                    className="dropdown-item"
+                    value={quantities[item.id] || item.quantity}/*propiedades computadas*/
+                    onChange={(e) => handleQuantityChange(e, item.id)}
+                    min="1"
+                  />
+                  <button onClick={() => handleQuantityUpdate(item.id)}>UPDATE!</button>
+                  <img className="dropdown-item" src={item.product_image} alt={item.product_name} />
+                </li>
+              ))}
+              <button onClick={()=> navigate("/")}>Go to Pay <i class="fa-solid fa-bag-shopping"></i></button>
+            </>
           )}
           {userData ? (
             <p>{userData.username}</p>

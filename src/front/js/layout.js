@@ -9,6 +9,7 @@ import Stock from "./component/Stock";
 import StockAdmin from "./component/StockAdmin";
 import StockAdminUpdate from "./component/StockAdminUpdate";
 import Cart from "./component/Cart";
+import Payment from "./component/Payment";
 
 import injectContext from "./store/appContext";
 
@@ -34,6 +35,7 @@ const Layout = () => {
                         <Route element={<Signup />} path="/signup" />
                         <Route element={<Stock />} path="/stock" />
                         <Route element={<Cart />} path="/cart" />
+                        <Route element={<Payment />} path="/payment" />
                         <Route element={<StockAdmin />} path="/stock-admin" />
                         <Route element={<StockAdminUpdate />} path="/stock-admin-update/:product_id" />
 

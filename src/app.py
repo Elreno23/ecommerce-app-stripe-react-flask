@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db, User, Products, StockType, UserType, Order, OrderDetail, Cart, CartItem,Payment,PaymentStatus
+from api.models import db, User, Products, StockType, UserType, Order, OrderDetail, Cart, CartItem
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -227,42 +227,44 @@ def update_profile_data():
 
     except Exception as e:
         return jsonify({'error': str(e)}),500
-
-@app.route('/payment_intent', methods=['POST'])
-@jwt_required()
-def payment_intent():
-    try:
-        current_user=get_jwt_identity()
-        user=User.query.filter_by(email=current_user).first()
-        if not user:
-            return jsonify({'msg':'User Not Found'}),404
-        body=request.get_json(silent=True)
-        if not body:
-            return jsonify({'msg': 'All fields are required'}),400
-        amount=body.get('amount')
-        if not amount:
-            return jsonify({'msg':'The Amount field is required'}),400
-        #Creamos un payment(prueba)
-        intent = stripe.PaymentIntent.create(
-            amount=amount,
-            currency='usd'
-        )
-        #instanciamos el pago y guardamos
-        payment=Payment(
-            user_id=user.id,
-            amount=amount,
-            currency='usd',
-            status=PaymentStatus.pending,
-            payment_intent_id=intent['id'],
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
-        )
-        db.session.add(payment)
-        db.session.commit()
-        return jsonify({'clientSecret': intent['client_secret']}),200
     
-    except Exception as e:
-        return jsonify({'error':str(e)}),500
+@app.route('/create_checkout_session', methods=['POST'])
+@jwt_required()
+def create_checkout_session():
+    try:
+        current_user = get_jwt_identity() 
+        print("Current User:", current_user)
+        user = User.query.filter_by(email=current_user).first() 
+        if not user: 
+            return jsonify({'msg': 'User Not Found'}), 404
+        
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'eur',
+                    'product_data': {
+                        'name': 'Nombre del Producto',
+                    },
+                    'unit_amount': 2000,
+                },
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url='https://www.youtube.com/watch?v=XzPBwG6pD8E',
+            cancel_url='https://www.youtube.com/watch?v=JXqbiOMFu2c'
+        )
+        
+        print("Checkout Session:", session) # Verificar la sesión de pago 
+        return jsonify({'id': session.id}) 
+    
+    except stripe.error.AuthenticationError as e: 
+        print("Authentication Error:", str(e)) # Imprimir el error de autenticación 
+        return jsonify({'error': 'Invalid API Key provided'}), 403 
+    
+    except Exception as e: 
+        print("Error:", str(e)) # Imprimir el error 
+        return jsonify({'error': str(e)}), 403
     
 @app.route('/create_product', methods=['POST'])
 @jwt_required()
@@ -462,10 +464,6 @@ def new_order():
         user = User.query.filter_by(email=current_user).first()
         if not user:
             return jsonify({'msg':'User Not Found'}), 404
-        
-        body = request.get_json(silent=True)
-        if not body:
-            return jsonify({'msg': 'All fields are required'}), 400
     
         new_order = Order(
             date=datetime.datetime.now(),
@@ -498,7 +496,8 @@ def get_orders():
             orders_serialize.append(order.serialize())
 
         return jsonify({'msg': 'Orders successfully obtained',
-                        'data': orders_serialize}), 200
+                        'data': orders_serialize,
+                        'user_email':user.email}), 200
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -569,10 +568,6 @@ def new_order_detail():
         
         if quantity <= 0:
             return jsonify({'msg': 'Quantity must be greater than zero'}), 400
-        
-        order = Order.query.filter_by(id=product_id).first()
-        if not product:
-            return jsonify({'msg': 'Product Not Found'}), 404
         
         order = Order.query.filter_by(id=order_id).first()
         if not order:
@@ -705,7 +700,8 @@ def get_detail_orders():
             detail_orders_serialize.append(detail.serialize())
 
         return jsonify({'msg':'All order details successfully obtained',
-                            'data': detail_orders_serialize}),200
+                            'data': detail_orders_serialize,
+                            'user_email':user.email}),200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500

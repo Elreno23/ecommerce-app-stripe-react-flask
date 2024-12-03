@@ -15,35 +15,6 @@ class StockType(enum.Enum):
     mouse = 'mouse'
     camera = 'camera'
 
-class PaymentStatus(enum.Enum):
-    pending = 'pending'
-    completed = 'completed'
-    failed = 'failed'
-
-class Payment(db.Model):
-    __tablename__='payment'
-    id=db.Column(db.Integer, primary_key=True)
-    user_id=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    amount = db.Column(db.Integer, nullable=False)
-    currency=db.Column(db.String(3), nullable=False)
-    status=db.Column(Enum(PaymentStatus), nullable=False)
-    payment_intent_id=db.Column(db.String(50), nullable=False)#almacena el id de PaymentIntent
-    user=db.relationship('User', back_populates='payments')
-
-    def __repr__(self):
-        return f'Payment: {self.id}>'
-    
-    def serialize(self):
-        return{
-        'id':self.id,
-        'user_id':self.user_id,
-        'amount':self.amount,
-        'currency':self.currency,
-        'status':self.status.value,
-        'payment_intent_id':self.payment_intent_id
-        }
-
-
 class User(db.Model):
     __tablename__='user'
     id = db.Column(db.Integer, primary_key=True)
@@ -54,7 +25,7 @@ class User(db.Model):
     usertype = db.Column(Enum(UserType), nullable=False)
     orders_relationship = db.relationship('Order', back_populates='user_relationship')
     cart=db.relationship('Cart', back_populates='user_relationship', uselist=False)
-    payments=db.relationship('Payment', back_populates='user')
+
 
     def __repr__(self):
         return f'<User: {self.email}>'
@@ -171,6 +142,7 @@ class OrderDetail(db.Model):
             'product_id': self.product_id,
             'order_id': self.order_id,
             'quantity': self.quantity,
-            'price': self.price
+            'price': self.price,
+            'product_name': self.product_relationship.name
         }
     
