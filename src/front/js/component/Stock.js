@@ -26,7 +26,11 @@ const Stock = () => {
     };
     const handleAddToCart = (product_id) => {
         const newQuantity = cartQuantities[product_id] || 1;
-        actions.addItemCart({ product_id, quantity: newQuantity });
+        const data = { product_id, quantity: newQuantity };
+        console.log('Sending data:', data);
+        actions.addItemCart(data);
+
+        
     };
 
     return (

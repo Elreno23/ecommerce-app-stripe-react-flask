@@ -47,9 +47,7 @@ const Payment = () => {
     };
 
     return (
-        <button role="link" onClick={handleClick}>
-            Pay
-        </button>
+        <button role="link" onClick={handleClick}>Go to Pay <i className="fa-solid fa-bag-shopping"></i></button>
     );
 };
 

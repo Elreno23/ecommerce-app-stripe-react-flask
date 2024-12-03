@@ -20,8 +20,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			stock: [],
 			cart: [],
 			orders: [],
-			detailOrders: [],
-			payments: []
+			detailOrders: []
 
 		},
 		actions: {
@@ -143,7 +142,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				}
 			},
-			addItemCart: async (product_id, quantity) => {
+			addItemCart: async (data) => {
 				try {
 					if (!token) {
 						return null
@@ -154,7 +153,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 							"Content-Type": "application/json",
 							"Authorization": `Bearer ${token}`
 						},
-						body: JSON.stringify(product_id, quantity)
+						body: JSON.stringify(data)
 					});
 
 					if (!resp.ok) {
@@ -218,7 +217,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				}
 			},
-			updateItemCart: async (quantity, item_id) => {
+			updateItemCart: async (data) => {
 				try {
 					if (!token) {
 						return null
@@ -229,7 +228,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 							"Content-Type": "application/json",
 							"Authorization": `Bearer ${token}`
 						},
-						body: JSON.stringify(quantity, item_id)
+						body: JSON.stringify(data)
 
 					});
 					console.log(resp);
@@ -293,7 +292,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				}
 			},
-			newOrderDetail: async () => {
+			newOrderDetail: async (order_id) => {
 				try {
 					if (!token) {
 						return null
@@ -304,12 +303,18 @@ const getState = ({ getStore, getActions, setStore }) => {
 							"Content-Type": "application/json",
 							"Authorization": `Bearer ${token}`
 						},
-						body: JSON.stringify()
+						body: JSON.stringify({ order_id })
 					});
+					console.log(resp);
+					console.log(token);
+
+
 					if (!resp.ok) {
 						throw new Error("Error receiving data!");
 					}
 					const result = await resp.json();
+					console.log(result);
+
 					alert("Order details successfully created");
 					return ({ msg: result.msg, data: result.data });
 				} catch (err) {
@@ -340,7 +345,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				}
 			}
-			
+
 
 		}
 

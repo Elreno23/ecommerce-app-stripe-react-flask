@@ -548,47 +548,53 @@ def new_order_detail():
     try:
         current_user= get_jwt_identity()
         user=User.query.filter_by(email=current_user).first()
+        print('usuario existente:', user)
         if not user:
             return jsonify({'msg':'User Not Found'}), 404
 
         body=request.get_json(silent=True)
+        print('lo que se recibe en el body', body)
         if not body:
             return jsonify({'msg':'All fields are required'}), 400
 
-        product_id=body.get('product_id')
-        order_id=body.get('order_id')
-        quantity=body.get('quantity')
-    
-        if not product_id or not order_id or not quantity:
-            return jsonify({'msg': 'All fields are required'}), 400
-
-        product = Products.query.filter_by(id=product_id).first()
-        if not product:
-            return jsonify({'msg': 'Product Not Found'}), 404
-        
-        if quantity <= 0:
-            return jsonify({'msg': 'Quantity must be greater than zero'}), 400
+        order_id = body.get('order_id')
+        print('order_id existente?',order_id)
+        if not order_id:
+            return jsonify({'msg':'Order ID is required'}), 400
         
         order = Order.query.filter_by(id=order_id).first()
+        print('order existente?:', order)
         if not order:
-            return jsonify({'msg': 'Order Not Found'}), 404
-
-        price = product.price * quantity
+            return jsonify({'msg':'Order Not Found'}),404
         
-        new_order_detail = OrderDetail(
-            product_id=product_id,
-            order_id=order_id,
-            quantity=quantity,
-            price=price
-        )
-
-        db.session.add(new_order_detail)
-        db.session.commit()
-
-        return jsonify({'msg':'Order detail created successfully',
-                        'data':new_order_detail.serialize()}), 201
-
+        cart=Cart.query.filter_by(user_id=user.id).first()
+        print('cart items existentes?:', cart.cart_items)
+        if not cart or not cart.cart_items:
+            return jsonify({'msg':'Cart is empty'}),400
+        
+        for cart_item in cart.cart_items:
+            product =Products.query.filter_by(id=cart_item.product_id).first()
+            if not product:
+                return jsonify({'msg':f'Product with id {cart_item.product_id} not found'}),404
+        
+        if cart_item.quantity <= 0:
+            return jsonify({'msg': 'Quantity must be greater than zero'}), 400
+        
+        price = product.price * cart_item.quantity 
+        new_order_detail = OrderDetail( 
+            product_id=cart_item.product_id, 
+            order_id=order.id, 
+            quantity=cart_item.quantity, 
+            price=price 
+            ) 
+        
+        db.session.add(new_order_detail) 
+        db.session.commit() 
+        
+        return jsonify({'msg': 'Order details created successfully'}), 201
+    
     except Exception as e:
+        print("Error:", str(e))
         return jsonify({'error': str(e)}), 500
     
 @app.route('/update_order_detail/<int:detail_id>', methods=['PUT'])
@@ -823,6 +829,7 @@ def update_item_cart():
             return jsonify({'msg':'All fields are required'}),400
         
         item_id=body.get('item_id')
+        print('item_id disponible?',item_id)
         if not item_id:
             return jsonify({'msg':'The product does not exist in the cart'}),404
         
@@ -844,6 +851,7 @@ def update_item_cart():
         return jsonify({'msg':'Item quantity successfully updated'}),200
 
     except Exception as e:
+        print("Error:", str(e))
         return jsonify({'error': str(e)}),500
     
 @app.route('/delete_item_cart/<int:cart_item_id>',methods=['DELETE'])

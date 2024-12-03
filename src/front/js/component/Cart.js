@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Context } from '../store/appContext';
-import {useNavigate}  from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import Payment from './Payment';
 
 const Cart = () => {
   const { actions, store } = useContext(Context);
@@ -33,10 +34,26 @@ const Cart = () => {
   }
   const handleQuantityUpdate = (item_id) => {
     const newQuantity = quantities[item_id] || 1;
-    actions.updateItemCart({ item_id, quantity: newQuantity });
+    const data = {item_id, quantity: newQuantity}
+    actions.updateItemCart(data);
   }
   //actions.updateItemCart(item_id, newQuantity)
- 
+  const handleGoToPay = async () => {
+    try {
+      const orderResponse = await actions.newOrder();
+      if (orderResponse && orderResponse.data) {
+        const order_id = orderResponse.data.id;
+        
+        await actions.newOrderDetail(order_id)
+        //navigate("/cart")
+      } else {
+        console.error("Order response is invalid");
+      }
+    } catch (err) {
+      console.error("error calling order and detailsOrders");
+
+    }
+  }
   return (
     <div>
 
@@ -66,7 +83,7 @@ const Cart = () => {
                   <img className="dropdown-item" src={item.product_image} alt={item.product_name} />
                 </li>
               ))}
-              <button onClick={()=> navigate("/")}>Go to Pay <i class="fa-solid fa-bag-shopping"></i></button>
+              <button onClick={handleGoToPay}>Go to Order <i className="fa-solid fa-bag-shopping"></i></button>
             </>
           )}
           {userData ? (
