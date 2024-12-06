@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
   const { actions } = useContext(Context);
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [usersData, setUsersData] = useState({
     email: "",
     username: "",
@@ -18,11 +19,15 @@ const Signup = () => {
   };
 
   const handleSubmit = async (e) => {
-    console.log("Submitting usersData:", usersData);
     e.preventDefault();
-    const result = await actions.register(usersData);
-    if (result && result.status === 201) {
-      navigate("/"); // Redirige al login después de registrarse.
+    if (confirmPassword !== usersData.password) {
+      alert("Passwords don't match!")
+      return null
+    } else {
+      const result = await actions.register(usersData);
+      if (result && result.status === 201) {
+        navigate("/"); // Redirige al login después de registrarse.
+      }
     }
   };
 
@@ -61,6 +66,16 @@ const Signup = () => {
               value={usersData.password}
               onChange={handleChange}
               id="password"
+              placeholder="Enter password"
+              required />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="ConfirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              id="ConfirmPassword"
               placeholder="Enter password"
               required />
           </div>

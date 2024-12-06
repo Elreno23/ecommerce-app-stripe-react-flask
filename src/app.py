@@ -597,67 +597,52 @@ def new_order_detail():
         print("Error:", str(e))
         return jsonify({'error': str(e)}), 500
     
+
 @app.route('/update_order_detail/<int:detail_id>', methods=['PUT'])
 @jwt_required()
 def update_order_detail(detail_id):
     try:
-        # Obtener el usuario actual desde el token
+        # Obtener el usuario actual
         current_user = get_jwt_identity()
         user = User.query.filter_by(email=current_user).first()
         if not user:
-            return jsonify({'msg': 'User Not Found'}), 404
-        
-        body = request.get_json(silent=True)
-        if not body:
-            return jsonify({'msg': 'All fields are required'}), 400
+            return jsonify({'msg': 'Usuario no encontrado'}), 404
+
+        # Obtener los datos del cuerpo de la solicitud
+        body = request.get_json()
+        if not body or 'quantity' not in body:
+            return jsonify({'msg': 'Se requiere el campo "quantity" en el cuerpo de la solicitud'}), 400
+
+        # Obtener la nueva cantidad
+        quantity = int(body['quantity'])
+
+        # Validar la cantidad
+        if quantity <= 0:
+            return jsonify({'msg': 'La cantidad debe ser mayor que cero'}), 400
 
         # Buscar el detalle de la orden
         order_detail = OrderDetail.query.filter_by(id=detail_id).first()
         if not order_detail:
-            return jsonify({'msg': 'Order Detail Not Found'}), 404
-        
+            return jsonify({'msg': 'Detalle de orden no encontrado'}), 404
+
         # Verificar que el detalle de la orden pertenece al usuario actual
         if order_detail.order.user_id != user.id:
-            return jsonify({'msg': 'You do not have permission to modify this order detail'}), 403
-
-        # Obtener los campos del cuerpo de la solicitud
-        product_id = body.get('product_id')
-        order_id = body.get('order_id')
-        quantity = body.get('quantity')
-        
-        # Verificar que la cantidad sea mayor a cero
-        if quantity and quantity <= 0:
-            return jsonify({'msg': 'Quantity must be greater than zero'}), 400
-
-        # Consultar y actualizar el producto si se proporciona un product_id
-        product = None
-        if product_id:
-            product = Products.query.filter_by(id=product_id).first()
-            if not product:
-                return jsonify({'msg': 'Product Not Found'}), 404
-            order_detail.product_id = product_id
-        
-        # Consultar y actualizar la orden si se proporciona un order_id
-        if order_id:
-            order = Order.query.filter_by(id=order_id).first()
-            if not order:
-                return jsonify({'msg': 'Order Not Found'}), 404
-            order_detail.order_id = order_id
+            return jsonify({'msg': 'No tienes permiso para modificar este detalle de orden'}), 403
 
         # Actualizar la cantidad y recalcular el precio
-        if quantity:
-            order_detail.quantity = quantity
-            if product:  # Solo recalcular el precio si el producto existe
-                order_detail.price = product.price * order_detail.quantity
-        
-        # Guardar los cambios en la base de datos
+        order_detail.quantity = quantity
+        order_detail.price = order_detail.price * quantity
+
+        # Guardar los cambios
         db.session.commit()
 
-        return jsonify({'msg': 'Order detail updated successfully', 
+        return jsonify({'msg': 'Detalle de orden actualizado correctamente',
                         'data': order_detail.serialize()}), 200
 
+  
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print('Error:', str(e))
+        return jsonify({'error': 'Ocurrió un error inesperado'}), 500
 
 
 @app.route('/delete_detail_order/<int:detail_id>', methods=['DELETE'])
@@ -706,10 +691,10 @@ def get_detail_orders():
             detail_orders_serialize.append(detail.serialize())
 
         return jsonify({'msg':'All order details successfully obtained',
-                            'data': detail_orders_serialize,
-                            'user_email':user.email}),200
+                            'data': detail_orders_serialize}),200
 
     except Exception as e:
+        print('error', str(e))
         return jsonify({'error': str(e)}), 500
 
 @app.route('/get_specific_details/<int:order_id>', methods=['GET'])

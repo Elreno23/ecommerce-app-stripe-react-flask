@@ -143,6 +143,13 @@ class OrderDetail(db.Model):
             'order_id': self.order_id,
             'quantity': self.quantity,
             'price': self.price,
-            'product_name': self.product_relationship.name
+            'product_name': self.product_relationship.name,
+            'user_name':self.order.user_relationship.username,
+            'user_email':self.order.user_relationship.email,
+            'product_price':self.product_relationship.price,
+            'product_image':self.product_relationship.image,
+            'product_description':self.product_relationship.description,
+            'product_stocktype':self.product_relationship.stocktype.value
+
         }
     

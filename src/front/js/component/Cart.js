@@ -34,29 +34,27 @@ const Cart = () => {
   }
   const handleQuantityUpdate = (item_id) => {
     const newQuantity = quantities[item_id] || 1;
-    const data = {item_id, quantity: newQuantity}
+    const data = { item_id, quantity: newQuantity }
     actions.updateItemCart(data);
   }
-  //actions.updateItemCart(item_id, newQuantity)
+
   const handleGoToPay = async () => {
     try {
       const orderResponse = await actions.newOrder();
       if (orderResponse && orderResponse.data) {
         const order_id = orderResponse.data.id;
-        
         await actions.newOrderDetail(order_id)
-        //navigate("/cart")
+        navigate("/orders-details")
       } else {
         console.error("Order response is invalid");
       }
     } catch (err) {
       console.error("error calling order and detailsOrders");
-
     }
   }
+ 
   return (
     <div>
-
       <div className="dropdown">
         <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
           Carrito y extras

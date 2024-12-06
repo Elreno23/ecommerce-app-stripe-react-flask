@@ -10,6 +10,7 @@ import StockAdmin from "./component/StockAdmin";
 import StockAdminUpdate from "./component/StockAdminUpdate";
 import Cart from "./component/Cart";
 import Payment from "./component/Payment";
+import OrdersAndDetails from "./component/OrdersAndDetails";
 
 import injectContext from "./store/appContext";
 
@@ -37,6 +38,7 @@ const Layout = () => {
                         <Route element={<Cart />} path="/cart" />
                         <Route element={<Payment />} path="/payment" />
                         <Route element={<StockAdmin />} path="/stock-admin" />
+                        <Route element={<OrdersAndDetails />} path="/orders-details" />
                         <Route element={<StockAdminUpdate />} path="/stock-admin-update/:product_id" />
 
                         <Route element={<h1>Not found!</h1>} />

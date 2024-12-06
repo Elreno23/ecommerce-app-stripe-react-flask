@@ -19,7 +19,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			userProfile: null,
 			stock: [],
 			cart: [],
-			orders: [],
 			detailOrders: []
 
 		},
@@ -269,29 +268,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 					alert("Order not created")
 				}
 			},
-			getOrders: async () => {
-				try {
-					if (!token) {
-						return null
-					}
-					const resp = await fetch(`${url}get_orders`, {
-						headers: {
-							"Content-Type": "application/json",
-							"Authorization": `Bearer ${token}`
-						}
-					});
-					if (!resp.ok) {
-						throw new Error("Error receiving data!")
-					}
-					const result = await resp.json();
-					setStore({ orders: result })
-
-				} catch (err) {
-					console.error("There was a problem with the fetch operation:", err);
-					alert("Order not obtained")
-
-				}
-			},
 			newOrderDetail: async (order_id) => {
 				try {
 					if (!token) {
@@ -339,10 +315,67 @@ const getState = ({ getStore, getActions, setStore }) => {
 					}
 					const result = await resp.json();
 					setStore({ detailOrders: result.data })
+					console.log(getStore().detailOrders);
+
 				} catch (err) {
 					console.error("There was a problem with the fetch operation:", err);
 					alert("Order Details Not Obtained");
 
+				}
+			},
+			updateOrderDetail: async (detail_id, quantity) => {
+				try {
+					if (!token) {
+						return null
+					}
+					const resp = await fetch(`${url}update_order_detail/${detail_id}`, {
+						method: "PUT",
+						headers: {
+							"Content-Type": "application/json",
+							"Authorization": `Bearer ${token}`
+						},
+						body: JSON.stringify({ quantity })
+					});
+					console.log(resp);
+					
+					if (!resp.ok) {
+						throw new Error("Error receiving data!")
+					}
+					const result = await resp.json();
+					console.log(result);
+					
+					alert("Updated Order Details")
+					return ({ data: result.data })
+				} catch (err) {
+					console.error("There was a problem with the fetch operation:", err);
+					alert("Order Details Not Updated")
+
+				}
+			},
+			createCheckoutSession: async () => {
+				try {
+					if (!token) {
+						return null;
+					}
+					const resp = await fetch(`${url}create_checkout_session`, {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							"Authorization": `Bearer ${token}`
+						}
+					});
+					console.log(resp);
+					console.log(token);
+					
+					if (!resp.ok) {
+						throw new Error("Error receiving data!");
+					}
+					const session = await resp.json();
+					alert("Checkout session successfully created");
+					return { sessionId: session.id };
+				} catch (err) {
+					console.error("There was a problem with the fetch operation:", err);
+					alert("Checkout session not created");
 				}
 			}
 

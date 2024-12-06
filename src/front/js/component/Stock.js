@@ -39,7 +39,7 @@ const Stock = () => {
                 <div>Loading...</div>
             ) : (
                 products.map((product, index) => (
-                    < div className="card" style={{ width: '18rem', margin: '1rem' }} key={index}>
+                    <div className="card" style={{ width: '18rem', margin: '1rem' }} key={index}>
                         <img src={product.image} className="card-img-top" alt={product.name} />
                         <div className="card-body">
                             <h5 className="card-title">{product.name}</h5>
