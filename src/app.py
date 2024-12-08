@@ -477,7 +477,7 @@ def new_order():
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    
+       
 @app.route('/get_orders', methods=['GET'])
 @jwt_required()
 def get_orders():
@@ -532,6 +532,7 @@ def delete_order(order_id):
             return jsonify({'msg': 'User Not Found'}), 404
         
         order=Order.query.filter_by(id=order_id, user_id=user.id).first()
+        print('error', order)
         if not order:
             return jsonify({'msg': f'Order {order_id} not found'}), 404
         
@@ -540,6 +541,7 @@ def delete_order(order_id):
         return jsonify({'msg': 'Order successfully removed'}), 200
 
     except Exception as e:
+        print("error", str(e))
         return jsonify({'error': str(e)}), 500
 
 @app.route('/new_order_detail', methods=['POST'])
@@ -567,34 +569,33 @@ def new_order_detail():
         if not order:
             return jsonify({'msg':'Order Not Found'}),404
         
-        cart=Cart.query.filter_by(user_id=user.id).first()
-        print('cart items existentes?:', cart.cart_items)
-        if not cart or not cart.cart_items:
-            return jsonify({'msg':'Cart is empty'}),400
+        cart_items = CartItem.query.filter_by(cart_id=user.cart.id).all() 
+        if not cart_items: 
+            return jsonify({'msg': 'Cart is empty'}), 400 
         
-        for cart_item in cart.cart_items:
-            product =Products.query.filter_by(id=cart_item.product_id).first()
-            if not product:
-                return jsonify({'msg':f'Product with id {cart_item.product_id} not found'}),404
-        
-        if cart_item.quantity <= 0:
-            return jsonify({'msg': 'Quantity must be greater than zero'}), 400
-        
-        price = product.price * cart_item.quantity 
-        new_order_detail = OrderDetail( 
-            product_id=cart_item.product_id, 
-            order_id=order.id, 
-            quantity=cart_item.quantity, 
-            price=price 
-            ) 
-        
-        db.session.add(new_order_detail) 
+        for cart_item in cart_items: 
+            product = Products.query.filter_by(id=cart_item.product_id).first() 
+            if not product: 
+                return jsonify({'msg': f'Product with id {cart_item.product_id} not found'}), 404 
+            
+            if cart_item.quantity <= 0: 
+                return jsonify({'msg': 'Quantity must be greater than zero'}), 400 
+            
+            price = product.price * cart_item.quantity 
+            
+            new_order_detail = OrderDetail( 
+                product_id=cart_item.product_id, 
+                order_id=order.id, 
+                quantity=cart_item.quantity, 
+                price=price 
+                ) 
+            db.session.add(new_order_detail) 
         db.session.commit() 
         
-        return jsonify({'msg': 'Order details created successfully'}), 201
+        return jsonify({'msg': 'Order details created successfully'}), 201 
     
-    except Exception as e:
-        print("Error:", str(e))
+    except Exception as e: 
+        print("Error:", str(e)) 
         return jsonify({'error': str(e)}), 500
     
 
@@ -655,6 +656,7 @@ def delete_detail_order(detail_id):
             return jsonify({'msg':'User Not Found'}), 404
 
         order_detail = OrderDetail.query.filter_by(id=detail_id).first()
+        print('error',order_detail)
         if not order_detail:
             return jsonify({'msg': f'Order detail {detail_id} Not Found'}), 404
         
@@ -667,6 +669,7 @@ def delete_detail_order(detail_id):
         return jsonify({'msg':'Order detail successfully removed'}),200
     
     except Exception as e:
+        print("error", str(e))
         return jsonify({'error': str(e)}), 500
 
 @app.route('/get_detail_orders', methods=['GET'])

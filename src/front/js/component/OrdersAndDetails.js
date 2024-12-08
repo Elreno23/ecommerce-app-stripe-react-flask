@@ -11,6 +11,8 @@ const OrdersAndDetails = () => {
 
 
     const detailOrders = store.detailOrders;
+    console.log("esto son los detalles de ordenes", detailOrders);
+
 
     const handleShowInput = () => {
         setShowInput(true)
@@ -36,6 +38,17 @@ const OrdersAndDetails = () => {
 
         }
     }
+    const handleProductDelete = async ( detail_id) => {
+        try {
+            
+            await actions.deleteOrderDetail(detail_id);
+            console.log("detailOrder", detail_id);
+            window.location.reload()
+        } catch (err) {
+            console.error("Error deleting order or order detail:", err);
+            alert("Error deleting order or order detail");
+        }
+    };
 
 
     return (
@@ -91,6 +104,7 @@ const OrdersAndDetails = () => {
                         <>
                             <Payment />
                             <button onClick={handleShowInput}>Wrong quantity?</button>
+                            <button onClick={() => handleProductDelete( detail.id)}>Delete Order</button>
                         </>
                     )}
                 </div>

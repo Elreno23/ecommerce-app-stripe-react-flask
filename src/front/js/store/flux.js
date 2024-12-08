@@ -337,13 +337,13 @@ const getState = ({ getStore, getActions, setStore }) => {
 						body: JSON.stringify({ quantity })
 					});
 					console.log(resp);
-					
+
 					if (!resp.ok) {
 						throw new Error("Error receiving data!")
 					}
 					const result = await resp.json();
 					console.log(result);
-					
+
 					alert("Updated Order Details")
 					return ({ data: result.data })
 				} catch (err) {
@@ -366,7 +366,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					});
 					console.log(resp);
 					console.log(token);
-					
+
 					if (!resp.ok) {
 						throw new Error("Error receiving data!");
 					}
@@ -376,6 +376,48 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (err) {
 					console.error("There was a problem with the fetch operation:", err);
 					alert("Checkout session not created");
+				}
+			},
+			/*deleteOrder: async (order_id) => {
+				try {
+					const resp = await fetch(`${url}delete_order/${order_id}`, {
+						method: "DELETE",
+						headers: {
+							"Content-Type": "application/json",
+							"Authorization": `Bearer ${token}`
+						}
+					});
+					if (!resp.ok) {
+						throw new Error("Error receiving data!")
+					};
+					const result = await resp.json()
+					alert("Order deleted")
+					return (result.msg)
+				} catch (err) {
+					console.error("There was a problem with the fetch operation:", err);
+					alert("Order not deleted")
+
+				}
+			},*/
+			deleteOrderDetail: async (detail_id) => {
+				try {
+					const resp = await fetch(`${url}delete_detail_order/${detail_id}`, {
+						method: "DELETE",
+						headers: {
+							"Content-Type": "application/json",
+							"Authorization": `Bearer ${token}`
+						}
+					});
+					if (!resp.ok) {
+						throw new Error("Error receiving data!")
+					};
+					const result = await resp.json()
+					alert("Order Detail deleted")
+					return (result.msg)
+				} catch (err) {
+					console.error("There was a problem with the fetch operation:", err);
+					alert("Order Detail not deleted")
+
 				}
 			}
 

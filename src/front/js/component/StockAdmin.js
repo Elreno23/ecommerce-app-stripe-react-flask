@@ -69,7 +69,7 @@ const StockAdmin = () => {
                 throw new Error("Error deleting data!");
             }
             alert("Product Successfully Removed");
-            window.location.reload();;
+            window.location.reload();
         } catch (err) {
             console.error("There was a problem with the fetch operation:", err);
             alert("Product not removed!")

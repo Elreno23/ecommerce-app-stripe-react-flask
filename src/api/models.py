@@ -15,6 +15,8 @@ class StockType(enum.Enum):
     mouse = 'mouse'
     camera = 'camera'
 
+
+
 class User(db.Model):
     __tablename__='user'
     id = db.Column(db.Integer, primary_key=True)
@@ -112,6 +114,7 @@ class Order(db.Model):
     user_id=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user_relationship = db.relationship('User', back_populates='orders_relationship')
     order_details_relationship= db.relationship('OrderDetail', back_populates='order')
+    
 
     def __repr__(self):
         return f'<Order: {self.id}, Date: {self.date}, User: {self.user_id}>'

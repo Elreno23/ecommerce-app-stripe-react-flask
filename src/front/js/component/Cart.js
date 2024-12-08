@@ -45,6 +45,7 @@ const Cart = () => {
         const order_id = orderResponse.data.id;
         await actions.newOrderDetail(order_id)
         navigate("/orders-details")
+        window.location.reload();
       } else {
         console.error("Order response is invalid");
       }
