@@ -1,0 +1,87 @@
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap; /* Permite que las tarjetas se ajusten en varias filas si es necesario */
+}
+
+.card {
+    flex: 0 1 auto; /* Evita que las tarjetas se estiren o compriman */
+    margin: 10px;
+    width: 18rem; /* Ajusta el ancho de la tarjeta */
+    overflow: hidden; /* Asegura que el contenido no se desborde */
+    text-align: center;
+    border:2px,solid,black;
+}
+.card-title{
+    margin-top: 10px;
+}
+.card-text.stock{
+    margin-bottom: 5px;
+}
+
+.container-img {
+    width: 100%; /* Asegura que el contenedor de la imagen ocupe todo el ancho de la tarjeta */
+    height: 200px; /* Ajusta la altura según tus necesidades */
+    overflow: hidden; /* Oculta cualquier contenido que se desborde */
+}
+
+.card-img-top {
+    width: 100%; /* Ajusta el ancho al 100% del contenedor */
+    height: 100%; /* Ajusta la altura al 100% del contenedor */
+    object-fit: contain; /* Asegura que la imagen se ajuste al contenedor sin distorsionarse */
+    border-radius: 10px; /* Ajusta el radio del borde según tus necesidades */
+}
+.quantityStock input[type="number"] {
+    width: 50px;
+    padding: 5px;
+    border: 1px solid #010101;
+    border-radius: 4px;
+    height: 30px;
+    margin-top: 4px;
+    margin-left: 15px;
+}
+.quantityStock{
+    display: flex;
+    flex-direction: column;
+    align-items:flex-start;
+}
+.addAndDetailsButtons{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+
+}
+.btn.stock{
+    margin-top: 15px;
+    background-color: #f98a02;
+    border-color: #212529;
+    display: flex;
+    align-items: center;
+    height: 40px;
+}
+.btn.stock i{
+    font-size:larger;
+}
+.btn.stock:hover{
+    background-color: white;
+    color: #f98a02;
+}
+.btn.stock:focus{
+    outline: none;
+}
+
+.addAndDetailsButtons .btn.stock:nth-of-type(2) p {
+    margin-right: 10px; /* Aplica el estilo que desees */
+    margin-top: 15px;
+}
+.addAndDetailsButtons .btn.stock:nth-of-type(2) i{
+    margin-bottom:5px ;
+} 
+p{
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+label{
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}

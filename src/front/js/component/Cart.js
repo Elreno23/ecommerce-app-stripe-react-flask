@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Context } from '../store/appContext';
 import { useNavigate } from 'react-router-dom';
-import Payment from './Payment';
+import '../../styles/Cart.css'
 
 const Cart = () => {
   const { actions, store } = useContext(Context);
@@ -19,9 +19,9 @@ const Cart = () => {
     }
   }, [cartItems])
 
-  const handleItemDelete = (e, item_id) => {
+  const handleItemDelete = async (e, item_id) => {
     e.stopPropagation(); //No funciona!
-    actions.deleteItemCart(item_id)
+    await actions.deleteItemCart(item_id)
   }
   const handleQuantityChange = (e, item_id) => {
     e.stopPropagation();
@@ -52,8 +52,16 @@ const Cart = () => {
     } catch (err) {
       console.error("error calling order and detailsOrders");
     }
+  };
+  const handleDetails = (product_id) => {
+    navigate(`/details/${product_id}`)
+  };
+  const logout = () => {
+    localStorage.removeItem("jwt_token");
+    navigate("/");
+    alert("You are logged out.")
   }
- 
+
   return (
     <div>
       <div className="dropdown">
@@ -67,28 +75,49 @@ const Cart = () => {
             <>
               {cartItems.map((item, index) => (
                 <li key={index}>
-                  <button className="dropdown-item" onClick={(e) => handleItemDelete(e, item.id)}>
-                    <i className="fa-solid fa-trash" ></i>
-                  </button>
-                  <a className="dropdown-item" href="#">{item.product_name}</a>
-                  <input
-                    type="number"
-                    className="dropdown-item"
-                    value={quantities[item.id] || item.quantity}/*propiedades computadas*/
-                    onChange={(e) => handleQuantityChange(e, item.id)}
-                    min="1"
-                  />
-                  <button onClick={() => handleQuantityUpdate(item.id)}>UPDATE!</button>
-                  <img className="dropdown-item" src={item.product_image} alt={item.product_name} />
+                  <div className='title'>
+                    <p>{item.product_name}</p>
+                  </div>
+                  <div className='quantity'>
+                    <label htmlFor="quantity">Quantity:</label>
+                    <input
+                      id='quantity'
+                      type="number"
+                      className="dropdown-item"
+                      value={quantities[item.id] || item.quantity}/*propiedades computadas*/
+                      onChange={(e) => handleQuantityChange(e, item.id)}
+                      min="1"
+                    />
+                  </div>
+                  <div className="image-container">
+                    <img className="card-img" src={item.product_image} alt={item.product_name} />
+                  </div>
+                  <div className='buttons'>
+                    <div className='infoAndDeatilsButtons'>
+                      <button className="btn icon-button" onClick={() => handleDetails(item.product_id)}><i className="fa-solid fa-info"></i></button>
+                      <button className="btn icon-button" onClick={() => handleQuantityUpdate(item.id)}><i className="fa-solid fa-pen"></i></button>
+                    </div>
+                    <div className='trashButton'>
+                      <button className="btn icon-button" onClick={(e) => handleItemDelete(e, item.id)}><i className="fa-solid fa-trash" ></i></button>
+                    </div>
+                  </div>
+                  <hr></hr>
                 </li>
               ))}
-              <button onClick={handleGoToPay}>Go to Order <i className="fa-solid fa-bag-shopping"></i></button>
+              <div className='goToOrderButton'>
+                <button className='btn btn-dark ' onClick={handleGoToPay}><p>Go to Order</p> <i className="fa-solid fa-bag-shopping"></i></button>
+              </div>
+              <hr></hr>
             </>
           )}
           {userData ? (
-            <p>{userData.username}</p>
+            <p className='seeYouUser'>See you later... <strong>{userData.username}</strong></p>
           ) : (
-            <p>Loading user info...</p>)}
+            <p>Loading user info...</p>
+          )}
+          <div className='logoutButton'>
+            <button className='btn logout' onClick={logout}><p>Logout</p><i className="fa-solid fa-right-from-bracket"></i></button>
+          </div>
         </ul>
       </div>
     </div>

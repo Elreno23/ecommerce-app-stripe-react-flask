@@ -1,0 +1,54 @@
+.container.details {
+    margin-bottom: 8%;
+    margin-top: 8%;
+}
+
+.container-img {
+    width: 100%;
+    /* Asegura que el contenedor de la imagen ocupe todo el ancho de la tarjeta */
+    height: 200px;
+    /* Ajusta la altura según tus necesidades */
+    overflow: hidden;
+    /* Oculta cualquier contenido que se desborde */
+}
+
+.card-img-top {
+    width: 100%;
+    /* Ajusta el ancho al 100% del contenedor */
+    height: 100%;
+    /* Ajusta la altura al 100% del contenedor */
+    object-fit: contain;
+    /* Asegura que la imagen se ajuste al contenedor sin distorsionarse */
+    border-radius: 10px;
+    /* Ajusta el radio del borde según tus necesidades */
+}
+.productoEnCarrito{
+    color: red;
+}
+.btn.add {
+    margin-top: 15px;
+    background-color: #f98a02;
+    border-color: #212529;
+    display: flex;
+    align-items: center;
+    height: 40px;
+}
+
+.btn.add i {
+    font-size: larger;
+}
+
+.btn.add:hover {
+    background-color: white;
+    color: #f98a02;
+}
+
+.btn.add:focus {
+    outline: none;
+}
+
+.card-body.details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

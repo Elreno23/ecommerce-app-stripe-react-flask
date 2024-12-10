@@ -391,7 +391,7 @@ def modify_product(product_id):
     except Exception as e: 
         return jsonify({'error': str(e)}), 500
 
-@app.route('/obtain_specific_product/<int:product_id>', methods=['GET'])
+"""@app.route('/obtain_specific_product/<int:product_id>', methods=['GET'])
 @jwt_required()
 def obtain_specific_product(product_id):
     try: 
@@ -407,7 +407,7 @@ def obtain_specific_product(product_id):
         return jsonify({'msg':'Product found satisfactorily',
                         'data': specific_product.serialize()}),200
     except Exception as e: 
-        return jsonify({'error': str(e)}),500
+        return jsonify({'error': str(e)}),500"""
 
 @app.route('/obtain_all_products', methods=['GET'])
 @jwt_required()

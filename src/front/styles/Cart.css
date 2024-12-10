@@ -1,0 +1,175 @@
+.buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 10px;
+    margin-right: 10px;
+
+}
+
+.title {
+    text-align: center;
+    font-weight: bold;
+}
+
+p {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.infoAndDeatilsButtons {
+    display: flex;
+}
+
+.infoAndDeatilsButtons .btn.icon-button:nth-of-type(2) {
+    margin-left: 5px;
+}
+
+
+.quantity {
+    display: flex;
+    margin-left: 5px;
+}
+
+.quantity label {
+    padding: 5px;
+}
+
+.quantity input[type="number"] {
+    width: 50px;
+    padding: 5px;
+    border: 1px solid #010101;
+    border-radius: 4px;
+    height: 30px;
+    margin-top: 4px;
+    margin-left: 15px;
+}
+
+.card-img {
+    width: 150px;
+    height: 120px;
+    object-fit: contain;
+}
+
+.image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+
+.dropdown-menu {
+    margin-left: -13px;
+    border: 1px solid black; 
+    position: absolute; 
+    background-color: #f9f9f9; 
+    min-width: 160px; 
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); 
+    z-index: 1; 
+    max-height: 40rem; /* Altura máxima del dropdown */ 
+    overflow-y: auto; /* Agrega una barra de desplazamiento vertical */ 
+    padding-left: 5px;
+    padding-right: 2px;
+
+}
+
+hr {
+    opacity: unset;
+}
+
+.icon-button {
+    /* padding: 10px;*/
+    display: inline-flex;
+    background-color: #f98a02;
+    border-color: #212529;
+}
+
+.icon-button:hover {
+    background-color: white;
+    color:#f98a02;
+    /* Cambia el color de fondo al pasar el ratón */
+}
+
+.icon-button:focus {
+    outline: none;
+    /* Elimina el borde de enfoque */
+}
+
+.goToOrderButton {
+    display: flex;
+    justify-content: center;
+}
+
+.btn-dark {
+    display: flex;
+    align-items: center;
+
+}
+
+.btn-dark:hover {
+    background-color: white;
+    color:#f98a02;
+}
+
+.btn-dark:focus {
+    outline: none;
+}
+
+.btn-dark p {
+    margin-bottom: 0px;
+    margin-right: 5px;
+}
+
+.seeYouUser {
+    text-align: center;
+    color: #f98a02;
+    padding: 5px;
+}
+
+.logoutButton {
+    display: flex;
+    justify-content: center;
+}
+
+.logout {
+    background-color: #f98a02;
+    border-color: #212529;
+    display: flex;
+    align-items: center;
+
+}
+
+.logout:hover {
+    background-color: white;
+    color:#f98a02;
+}
+
+.logout:focus {
+    outline: none;
+}
+
+.logout p {
+    margin-bottom: 2px;
+    margin-right: 5px;
+}
+
+.fa-solid.fa-right-from-bracket {
+    font-size: larger;
+}
+
+.btn-secondary:hover {
+    background-color: white;
+    /* Color de fondo al pasar el cursor */
+    color:#f98a02;
+    /* Color del texto al pasar el cursor */
+}
+.btn-secondary,
+.btn-secondary.show, 
+.btn-secondary.focus,
+.btn-secondary.active{ 
+/*estilos por defecto para el dropdown,
+cuando está abierto, 
+cuando está enfocado y 
+cuando está seleccionado*/
+    background-color: #f98a02;
+    border-color: white;
+}

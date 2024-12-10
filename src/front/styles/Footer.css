@@ -1,0 +1,13 @@
+.anchorFooter{
+    color:white;
+}
+.anchorFooter:hover{
+    color:#f98a02;
+    text-decoration: underline;
+}
+.footer{
+    background-color: black;
+}
+span{
+    color: white;
+}

@@ -4,13 +4,14 @@ import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
   const { actions } = useContext(Context);
-  const [confirmPassword, setConfirmPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const navigate = useNavigate();
   const [usersData, setUsersData] = useState({
     email: "",
     username: "",
     password: ""
   });
-  const navigate = useNavigate();
+  
 
   const handleChange = (e) => {
     setUsersData({

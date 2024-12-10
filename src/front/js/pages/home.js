@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { Context } from "../store/appContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "../../styles/home.css";
 
 const Home = () => {
@@ -28,11 +28,11 @@ const Home = () => {
 
 
 	return (
-		<div className='container d-flex flex-column align-items-center' style={{ margin: "10% auto" }}>
-			<div className='d-flex flex-column' style={{ width: "300px", padding: "10px", border: "1px solid gray" }}>
+		<div className='container login'>
+			<div className='login'>
 				<form onSubmit={handleSubmit}>
-					<h1 className='mb-5' style={{ marginLeft: "30%" }}>Login</h1>
-					<div className="mb-3">
+					<h1>Login</h1>
+					<div className="inputAndLabelEmail">
 						<label htmlFor="email">Email</label>
 						<input
 							type="email"
@@ -43,7 +43,7 @@ const Home = () => {
 							placeholder="name@example.com"
 							required />
 					</div>
-					<div className="mb-3">
+					<div className="inputAndLabelPassword">
 						<label htmlFor="password">Password</label>
 						<input
 							type="password"
@@ -54,10 +54,14 @@ const Home = () => {
 							required
 						/>
 					</div>
-					<button className="btn btn-primary mt-5" style={{ width: "40%", marginLeft: "30%" }} type="submit">Login</button>
+					<div className="loginButton">
+					<button className="btn login" type="submit"><p>Login</p><i className="fa-solid fa-door-open"></i></button>
+					</div>
 				</form>
 			</div>
-			<a href="/signup">Click to register</a>
+			<Link className="anchorSignup" to="/signup">
+				<span>Click to Register</span>
+			</Link>
 		</div >
 	);
 };

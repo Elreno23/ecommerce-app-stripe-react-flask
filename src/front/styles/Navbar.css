@@ -1,0 +1,13 @@
+.navbar{
+    background-color: black;
+}
+span{
+    color: white;
+}
+a{
+    color:#f98a02;
+}
+a:hover{
+    color:white;
+    text-decoration: underline;
+}

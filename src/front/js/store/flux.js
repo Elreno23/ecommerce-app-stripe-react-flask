@@ -54,6 +54,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 				//reset the global store
 				setStore({ demo: demo });
 			},
+
 			register: async (usersData) => {
 				try {
 					const resp = await fetch(`${url}signup`, {
@@ -141,6 +142,24 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				}
 			},
+			getOneProduct: async (product_id) => {
+				try {
+					const stock = getStore().stock;
+					console.log('Stock antes del find:', stock);
+
+					const oneProduct = await stock.find((product) => product.id === product_id)
+					console.log('Producto encontrado:', oneProduct);
+
+
+					if (!oneProduct) {
+						throw new Error("Product not found")
+					}
+					return (oneProduct)
+				} catch (err) {
+					console.error("Error finding the product", err);
+
+				}
+			},
 			addItemCart: async (data) => {
 				try {
 					if (!token) {
@@ -162,6 +181,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 					const result = await resp.json();
 					console.log(result.data);
 					alert(`Product ${result.data.name} successfully added to cart`)
+					const updatedCart = [...getStore().cart, result.data];
+					setStore({ cart: updatedCart })
 					return ({ status: resp.status, msg: result.msg, data: result.data })
 				} catch (err) {
 					console.error('There was a problem with the fetch operation:', err);
@@ -208,6 +229,10 @@ const getState = ({ getStore, getActions, setStore }) => {
 					};
 					const result = await resp.json();
 					alert("item successfully deleted");
+
+					const updatedCart = getStore().cart.filter(item => item.id !== item_id);
+					setStore({ cart: updatedCart });
+
 					return ({ msg: result.msg });
 
 				} catch (err) {
@@ -315,7 +340,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 					}
 					const result = await resp.json();
 					setStore({ detailOrders: result.data })
-					console.log(getStore().detailOrders);
 
 				} catch (err) {
 					console.error("There was a problem with the fetch operation:", err);

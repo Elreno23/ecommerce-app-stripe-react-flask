@@ -1,7 +1,104 @@
-/*
-    home.css: This website contains selectors only used in home.css
 
-    All pages share the styles on index.css but you should create 
-    one more css for each page that will contain the selected used 
-    on that page only (the ones not reused in other pages).
-*/
+.container.login {
+    display: flex;
+    justify-content: center;
+    /* Centra horizontalmente */
+    align-items: center;
+    /* Centra verticalmente */
+    height: 100vh;
+    /* Asegura que el contenedor ocupe toda la altura de la ventana */
+    flex-direction: column;
+    /* Opcional: Si quieres que los elementos se apilen verticalmente */
+}
+
+form {
+    position:relative;
+    border: 1px solid black;
+    padding: 20px;
+    border-radius: 20px;
+}
+form::before { 
+    content: ''; 
+    position: absolute; 
+    top: -20px; /* Ajusta según sea necesario */ 
+    left: -20px; /* Ajusta según sea necesario */ 
+    right: -20px; /* Ajusta según sea necesario */ 
+    bottom: -20px; /* Ajusta según sea necesario */
+    border: 2px solid #f98a02 ; /* Borde interior */ 
+    pointer-events: none; /* Asegura que el pseudo-elemento no interfiera con los eventos del ratón */ }
+
+h1 {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 60px;
+}
+
+.inputAndLabelEmail {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 40px 20px;
+
+
+}
+
+.inputAndLabelEmail input {
+    width: 20rem;
+    margin-top: 15px;
+
+}
+
+.inputAndLabelPassword {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 15px 20px;
+}
+
+.inputAndLabelPassword input {
+    width: 20rem;
+    margin-top: 15px;
+}
+
+.btn.login {
+    display: flex;
+    align-items: baseline;
+    background-color: #f98a02;
+    border-color: #212529;
+    width: 35%;
+    justify-content: space-around;
+}
+
+.btn.login:hover {
+    background-color: white;
+    color: #f98a02;
+}
+
+.btn.login p {
+    margin: 0;
+}
+
+.btn.login i {
+    margin-left: 10px;
+    font-size: larger;
+}
+
+.loginButton {
+    display: flex;
+    justify-content: center;
+    margin-top: 100px;
+}
+
+.anchorSignup,.anchorSignup:hover {
+    text-decoration: none; /* Elimina el subrayado del enlace */ 
+    color: inherit;
+    margin-top: 45px;
+}
+
+.anchorSignup span {
+    color: black;
+
+}
+.anchorSignup span:hover{
+    color: white;
+}
