@@ -155,4 +155,18 @@ class OrderDetail(db.Model):
             'product_stocktype':self.product_relationship.stocktype.value
 
         }
-    
+"""
+1)Crear enum con estados de pago y un endpoint para modificar el estado de pago de la orden
+al crear la orden el estado de pago será pending y al completarse el pago con exito consumimos la api para actualizar el estado a completed.
+
+2)Actualizar de manera correcta los estados para evitar recargas de paginas y la app sea fluida.
+
+3)Integrar los endpoints que faltan(tanto para el admin como el usuario) que son para crear un buscador y traer los productos por parametros,
+obtener ordenes especificas por id y detalles de ordenes y modificar los datos del usuario, además de mostrar más detalles del Profile.
+
+4)Integrar endpoints para forgotPassword por email y entregar factura
+
+5)Responsive
+
+6)Foco en los estilos, solucionar conflictos hacer la página mas simple aún
+"""

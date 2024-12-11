@@ -1,8 +1,8 @@
 .anchorFooter{
-    color:white;
+    color:#f98a02;
 }
 .anchorFooter:hover{
-    color:#f98a02;
+    color:white;
     text-decoration: underline;
 }
 .footer{

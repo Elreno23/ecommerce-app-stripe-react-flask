@@ -1,12 +1,18 @@
-
-.container.stock {
+/* Contenedor principal */
+.container.addProduct {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    flex-direction: column;
+}
+.container.adminCard{
     display: flex;
     align-items: center;
     justify-content: center;
     flex-wrap: wrap; /* Permite que las tarjetas se ajusten en varias filas si es necesario */
 }
-
-.card.stock {
+.card.admin {
     flex: 0 1 auto; /* Evita que las tarjetas se estiren o compriman */
     margin: 10px;
     width: 18rem; /* Ajusta el ancho de la tarjeta */
@@ -16,23 +22,29 @@
     padding: 0px 12px;
     word-wrap: break-word;
     max-width: 100%;
+    text-align: justify;
 }
-
-.card-title.stock {
+hr{
+    width: 100%; 
+    border: 1px solid black; 
+    margin-top: 10%;
+}
+.nameType{
+    text-align: center;
+}
+.card-title.admin {
     margin-top: 10px;
     white-space: nowrap; /* Evita que el texto se desborde en una sola línea */ 
     overflow: hidden; /* Oculta el desbordamiento del texto */ 
     text-overflow: ellipsis; /* Agrega puntos suspensivos al final del texto que se desborde */ 
 }
-
-.card-text.stock {
+.card-text.admin {
     margin-bottom: 5px;
     white-space: nowrap; /* Evita que el texto se desborde en una sola línea */ 
     overflow: hidden; /* Oculta el desbordamiento del texto */ 
     text-overflow: ellipsis; /* Agrega puntos suspensivos al final del texto que se desborde */ 
 }
-
-.container-img.stock {
+.container-img.admin {
     width: 100%; /* Asegura que el contenedor de la imagen ocupe todo el ancho de la tarjeta */
     height: 200px; /* Ajusta la altura según tus necesidades */
     overflow: hidden; /* Oculta cualquier contenido que se desborde */
@@ -40,37 +52,18 @@
     justify-content: center; 
     align-items: center;
 }
-
-.card-img-top.stock {
+.card-img-top.admin {
     max-width: 100%;
-    height: auto; /* Mantiene la proporción de la imagen */
+    max-height: 100%; /* Mantiene la proporción de la imagen */
     object-fit: contain; /* Asegura que la imagen se ajuste al contenedor sin distorsionarse */
     border-radius: 10px; /* Ajusta el radio del borde según tus necesidades */
 }
-
-.quantityStock input[type="number"] {
-    width: 50px;
-    padding: 5px;
-    border: 1px solid #010101;
-    border-radius: 4px;
-    height: 30px;
-    margin-top: 4px;
-    margin-left: 15px;
-}
-
-.quantityStock {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.addAndDetailsButtons {
+.modifyTrash {
     display: flex;
     justify-content: space-between;
     margin-top: 10px;
 }
-
-.btn.stock {
+.btn.admin {
     margin-top: 15px;
     background-color: #f98a02;
     border-color: #212529;
@@ -79,32 +72,71 @@
     height: 40px;
 }
 
-.btn.stock i {
+.btn.admin i {
     font-size: larger;
 }
 
-.btn.stock:hover {
+.btn.admin:hover {
     background-color: white;
     color: #f98a02;
 }
 
-.btn.stock:focus {
+.btn.admin:focus {
     outline: none;
 }
-
-.addAndDetailsButtons .btn.stock:nth-of-type(2) p {
-    margin-right: 10px;
-    margin-top: 15px;
+.formAddProducts h1{
+margin-bottom: 10px;
+}
+.formAddProducts{
+    position: relative;
+    border: 1px solid black;
+    padding: 20px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10%;
+    max-width: 50%;
 }
 
-.addAndDetailsButtons .btn.stock:nth-of-type(2) i {
-    margin-bottom: 5px;
+/* Estilos para cada grupo de etiqueta y entrada */
+.inputAndLabelNameAddProduct,
+.inputAndLabelDescriptionAddProduct,
+.inputAndLabelStockAddProduct,
+.inputAndLabelPriceAddProduct,
+.inputAndLabelImageAddProduct,
+.inputAndLabelStocktypeAddProduct {
+    margin: 10px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
-p {
-    font-family: Georgia, 'Times New Roman', Times, serif;
+.inputAndLabelNameAddProduct input,
+.inputAndLabelDescriptionAddProduct input,
+.inputAndLabelStockAddProduct input,
+.inputAndLabelPriceAddProduct input,
+.inputAndLabelImageAddProduct input,
+.inputAndLabelStocktypeAddProduct select {
+    width: 20rem;
+    margin-top: 5px;
 }
 
 label {
-    font-family: Georgia, 'Times New Roman', Times, serif;
+    margin-bottom: 5px;
+    font-size: 1rem;
+    font-weight: bold;
 }
+
+
+button.btn-dark.addProduct:hover {
+    background-color: white;
+    color:#f98a02;
+}
+.btn-dark:focus {
+    outline: none;
+}
+.btn-dark.addProduct{
+    margin-top: 15px;
+}
+

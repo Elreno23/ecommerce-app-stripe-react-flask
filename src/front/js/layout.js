@@ -8,7 +8,6 @@ import Signup from "./component/Signup";
 import Stock from "./component/Stock";
 import StockAdmin from "./component/StockAdmin";
 import StockAdminUpdate from "./component/StockAdminUpdate";
-import Cart from "./component/Cart";
 import Payment from "./component/Payment";
 import OrdersAndDetails from "./component/OrdersAndDetails";
 import Details from "./component/Details";
@@ -36,7 +35,6 @@ const Layout = () => {
                         <Route element={<Home />} path="/" />
                         <Route element={<Signup />} path="/signup" />
                         <Route element={<Stock />} path="/stock" />
-                        <Route element={<Cart />} path="/cart" />
                         <Route element={<Payment />} path="/payment" />
                         <Route element={<StockAdmin />} path="/stock-admin" />
                         <Route element={<OrdersAndDetails />} path="/orders-details" />

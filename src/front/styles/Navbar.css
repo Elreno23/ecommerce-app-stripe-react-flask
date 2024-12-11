@@ -11,3 +11,11 @@ a:hover{
     color:white;
     text-decoration: underline;
 }
+.welcome{
+    color: #f98a02;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: x-large;
+}
+.welcome:hover{
+    color:white;
+}

@@ -118,7 +118,7 @@ def signup():
             email=email,
             username=username,
             password=encrypted_password,
-            usertype=UserType.admin,#Modificar a user!(pruebas)
+            usertype=UserType.user,#Modificar a user!(pruebas)
             is_active=True
         )
         db.session.add(new_user)
@@ -195,7 +195,7 @@ def profile():
                             'orders':orders_serialize }),200
     except Exception as e:
         return jsonify({'error':str(e)}),500
-
+""""
 @app.route('/update_profile_data', methods=['PUT'])
 @jwt_required()
 def update_profile_data():
@@ -227,7 +227,7 @@ def update_profile_data():
 
     except Exception as e:
         return jsonify({'error': str(e)}),500
-    
+"""
 @app.route('/create_checkout_session', methods=['POST'])
 @jwt_required()
 def create_checkout_session():
@@ -391,7 +391,8 @@ def modify_product(product_id):
     except Exception as e: 
         return jsonify({'error': str(e)}), 500
 
-"""@app.route('/obtain_specific_product/<int:product_id>', methods=['GET'])
+""""
+@app.route('/obtain_specific_product/<int:product_id>', methods=['GET'])
 @jwt_required()
 def obtain_specific_product(product_id):
     try: 
@@ -407,8 +408,9 @@ def obtain_specific_product(product_id):
         return jsonify({'msg':'Product found satisfactorily',
                         'data': specific_product.serialize()}),200
     except Exception as e: 
-        return jsonify({'error': str(e)}),500"""
+        return jsonify({'error': str(e)}),500
 
+"""
 @app.route('/obtain_all_products', methods=['GET'])
 @jwt_required()
 def obtain_all_products():
@@ -521,7 +523,7 @@ def obtain_specific_order(order_id):
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    
+"""   
 @app.route('/delete_order/<int:order_id>', methods=['DELETE'])
 @jwt_required()
 def delete_order(order_id):
@@ -543,7 +545,7 @@ def delete_order(order_id):
     except Exception as e:
         print("error", str(e))
         return jsonify({'error': str(e)}), 500
-
+"""
 @app.route('/new_order_detail', methods=['POST'])
 @jwt_required()
 def new_order_detail():
@@ -756,6 +758,7 @@ def add_item_cart():
         current_user=get_jwt_identity()
         user=User.query.filter_by(email=current_user).first()
         if not user:
+            print("Usuario no encontrado")
             return jsonify({'msg': 'User Not Found'}),404
         
         body=request.get_json(silent=True)
@@ -781,13 +784,16 @@ def add_item_cart():
             cart = Cart(user_id=user.id)
             db.session.add(cart)
             db.session.commit()
+            print("Carrito creado para el usuario:", user.id)
     #añadimos o actualizamos el item en el carrito.
         cart_item=CartItem.query.filter_by(cart_id=cart.id, product_id=product_id).first()
         if cart_item:
-            cart_item.quantity += quantity   
+            cart_item.quantity += quantity 
+            print("Cantidad actualizada en el carrito:", cart_item.quantity)  
         else:
             cart_item=CartItem(cart_id=cart.id, product_id=product_id, quantity=quantity)
             db.session.add(cart_item)
+            print("Nuevo item añadido al carrito:", cart_item)
 
         db.session.commit()
         print("Producto agregado al carrito:", cart_item)
@@ -867,14 +873,6 @@ def delete_item_cart(cart_item_id):
     except Exception as e:
         return jsonify({'error': str(e)}),500
     
-
-@app.route('/private', methods=['GET'])
-@jwt_required()
-def private():
-    
-    current_user=get_jwt_identity()
-
-    return jsonify({'msg':'Ok'}), 200
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':

@@ -1,10 +1,10 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Context } from "../store/appContext";
 import { useNavigate, Link } from "react-router-dom";
 import "../../styles/home.css";
 
 const Home = () => {
-	const { actions } = useContext(Context);
+	const { actions, store } = useContext(Context);
 	const [loginData, setLoginData] = useState({
 		email: "",
 		password: ""
@@ -22,10 +22,9 @@ const Home = () => {
 		const result = await actions.login(loginData);
 		if (result.jwt_token && result.msg === "ok") {
 			localStorage.setItem("jwt_token", result.jwt_token);
-			navigate("/signup")
+			navigate("/stock")
 		}
 	}
-
 
 	return (
 		<div className='container login'>

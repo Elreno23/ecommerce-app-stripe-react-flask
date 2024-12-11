@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Context } from '../store/appContext';
 import { useNavigate, useParams } from 'react-router-dom';
+import '../../styles/StockAdminUpdate.css'
 
 const StockAdminUpdate = () => {
     const token = localStorage.getItem("jwt_token");
@@ -17,10 +18,16 @@ const StockAdminUpdate = () => {
         stocktype: ""
     });
     useEffect(() => {//Traemos la info del user para saber si es admin o no!
-        if (store.userProfile && store.userProfile.usertype !== "admin") {
+        if (!token) {
+            navigate("/")
+            return;
+        }
+        if (!store.userProfile) {
+            actions.getUserInfo();
+        } else if (store.userProfile && store.userProfile.usertype !== "admin") {
             navigate("/");
         }
-    }, [store.userProfile, navigate]);
+    }, [store.userProfile, navigate, token]);
 
     const handleUpdate = async (e, product_id) => {
         e.preventDefault();
@@ -53,31 +60,74 @@ const StockAdminUpdate = () => {
         });
     };
     return (
-        <div className='container'>
-            <form onSubmit={(e) => handleUpdate(e, product_id)}>
-                <div>
+        <div className='container update'>
+            <form className="formUpdateProducts" onSubmit={(e) => handleUpdate(e, product_id)}>
+                <h1>Update Product</h1>
+                <div className="inputAndLabelNameUpdateProduct">
                     <label htmlFor="name">Name</label>
-                    <input type="text" id="name" name="name" value={productData.name} onChange={handleChange} required />
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={productData.name}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
-                <div>
+                <div className="inputAndLabelDescriptionUpdateProduct">
                     <label htmlFor="description">Description</label>
-                    <input type="text" id="description" name="description" value={productData.description} onChange={handleChange} required />
+                    <input
+                        type="text"
+                        id="description"
+                        name="description"
+                        value={productData.description}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
-                <div>
+                <div className="inputAndLabelStockUpdateProduct">
                     <label htmlFor="stock">Stock</label>
-                    <input type="number" id="stock" name="stock" value={productData.stock} onChange={handleChange} min="1" required />
+                    <input
+                        type="number"
+                        id="stock"
+                        name="stock"
+                        value={productData.stock}
+                        onChange={handleChange}
+                        min="1"
+                        required
+                    />
                 </div>
-                <div>
+                <div className="inputAndLabelPriceUpdateProduct">
                     <label htmlFor="price">Price</label>
-                    <input type="number" id="price" name="price" value={productData.price} step="0.01" onChange={handleChange} required />
+                    <input
+                        type="number"
+                        id="price"
+                        name="price"
+                        value={productData.price}
+                        step="0.01"
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
-                <div>
+                <div className="inputAndLabelImageUpdateProduct">
                     <label htmlFor="image">Image-URL</label>
-                    <input type="text" id="image" name="image" value={productData.image} onChange={handleChange} required />
+                    <input
+                        type="text"
+                        id="image"
+                        name="image"
+                        value={productData.image}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
-                <div>
+                <div className="inputAndLabelStocktypeUpdateProduct">
                     <label htmlFor="stocktype">StockType</label>
-                    <select id="stocktype" name="stocktype" value={productData.stocktype} onChange={handleChange} required>
+                    <select
+                        id="stocktype"
+                        name="stocktype"
+                        value={productData.stocktype}
+                        onChange={handleChange}
+                        required>
                         <option value="">Select a product type</option>
                         <option value="monitor">Monitor</option>
                         <option value="keyboard">Keyboard</option>
@@ -86,7 +136,12 @@ const StockAdminUpdate = () => {
                         <option value="camera">Camera</option>
                     </select>
                 </div>
-                <button className="btn btn-primary" type="submit">Update Product</button>
+                <div className="updateButton">
+                    <button className="btn btn-dark update" type="submit">
+                        <p>Update</p>
+                        <i className="fa-solid fa-plus"></i>
+                    </button>
+                </div>
             </form>
         </div>
     )

@@ -1,0 +1,104 @@
+
+.card.ordersDetails {
+    flex: 0 1 auto;
+    /* Evita que las tarjetas se estiren o compriman */
+    margin: 10px;
+    width: 18rem;
+    /* Ajusta el ancho de la tarjeta */
+    overflow: hidden;
+    /* Asegura que el contenido no se desborde */
+    border: 2px solid black;
+    /* Ajusta el borde para que sea sólido y no una lista de valores */
+    padding: 0px 12px;
+    word-wrap: break-word;
+    max-width: 100%;
+}
+.nameStocktype{
+    text-align: center;
+}
+
+.card-title.ordersDetails {
+    margin-top: 10px;
+    white-space: normal;/* Permite que el texto se ajuste normalmente */
+    overflow: hidden;/* Oculta el desbordamiento del texto */
+    text-overflow: ellipsis;/* Agrega puntos suspensivos al final del texto que se desborde */
+}
+
+.card-text.ordersDetails {
+    white-space: normal;/* Permite que el texto se ajuste normalmente */
+    overflow: hidden;/* Oculta el desbordamiento del texto */
+    text-overflow: ellipsis;/* Agrega puntos suspensivos al final del texto que se desborde */
+}
+
+.container-img.ordersDetails {
+    width: 100%; /* Asegura que el contenedor de la imagen ocupe todo el ancho de la tarjeta */
+    height: 200px; /* Ajusta la altura según tus necesidades */
+    overflow: hidden; /* Oculta cualquier contenido que se desborde */
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+}
+
+.card-img-top.ordersDetails {
+    max-width: 100%;
+    max-height: 100%; /* Mantiene la proporción de la imagen */
+    object-fit: contain; /* Asegura que la imagen se ajuste al contenedor sin distorsionarse */
+    border-radius: 10px; /* Ajusta el radio del borde según tus necesidades */
+}
+
+.card-body.ordersDetails {
+    display: flex;
+    flex-direction: column;
+
+}
+.trashQuantity{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items:end;
+}
+.trashQuantity > button:nth-child(2) {
+    width: 45px;
+    max-width: 50px;
+    justify-content: center;
+    display: flex;
+}
+.trashQuantity > button:nth-child(1) {
+    width: 95px;
+    max-width: 100px;
+    justify-content: center;
+}
+.trashQuantity  p{
+    margin-bottom: 2px;
+    margin-right: 3px;
+}
+
+
+
+.quantityTrashPay {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.btn.ordersDetails {
+    margin-top: 15px;
+    background-color: #f98a02;
+    border-color: #212529;
+    display: flex;
+    align-items: center;
+    height: 40px;
+}
+
+.btn.ordersDetails i {
+    font-size: larger;
+}
+
+.btn.ordersDetails:hover {
+    background-color: white;
+    color: #f98a02;
+}
+
+.btn.ordersDetails:focus {
+    outline: none;
+}

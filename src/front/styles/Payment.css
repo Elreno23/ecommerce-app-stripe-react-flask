@@ -1,0 +1,21 @@
+.btn.Pay{
+    margin-top: 15px;
+    background-color: #f98a02;
+    border-color: #212529;
+    display: flex;
+    align-items: center;
+    height: 40px;
+}
+.btn.Pay i{
+    font-size:larger;
+}
+.btn.Pay:hover{
+    background-color: white;
+    color: #f98a02;
+}
+.btn.Pay:focus{
+    outline: none;
+}
+.btn.Pay strong{
+    margin-right: 5px;
+}

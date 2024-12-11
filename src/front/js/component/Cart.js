@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import '../../styles/Cart.css'
 
 const Cart = () => {
+  const token = localStorage.getItem("jwt_token");
   const { actions, store } = useContext(Context);
   const [isLoading, setIsLoading] = useState(true);
   const [quantities, setQuantities] = useState({})
@@ -14,14 +15,19 @@ const Cart = () => {
 
 
   useEffect(() => {
+    if(!token){
+      navigate("/")
+      return;
+    }
     if (cartItems.length > 0) {
       setIsLoading(false)
     }
-  }, [cartItems])
+  }, [cartItems, navigate, token])
 
   const handleItemDelete = async (e, item_id) => {
     e.stopPropagation(); //No funciona!
     await actions.deleteItemCart(item_id)
+    window.location.reload();
   }
   const handleQuantityChange = (e, item_id) => {
     e.stopPropagation();

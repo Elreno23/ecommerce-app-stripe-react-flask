@@ -98,9 +98,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 			getUserInfo: async () => {
-				if (!token) {
-					return null
-				}
 				try {
 					const resp = await fetch(`${url}profile`, {
 						headers: {
@@ -121,9 +118,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 			getStock: async () => {
-				if (!token) {
-					return null
-				}
 				try {
 					const resp = await fetch(`${url}obtain_all_products`, {
 						headers: {
@@ -162,9 +156,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			addItemCart: async (data) => {
 				try {
-					if (!token) {
-						return null
-					}
 					const resp = await fetch(`${url}add_item_cart`, {
 						method: "POST",
 						headers: {
@@ -181,8 +172,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 					const result = await resp.json();
 					console.log(result.data);
 					alert(`Product ${result.data.name} successfully added to cart`)
-					const updatedCart = [...getStore().cart, result.data];
-					setStore({ cart: updatedCart })
+					
+					setStore({cart:[...getStore().cart, result.data]})
 					return ({ status: resp.status, msg: result.msg, data: result.data })
 				} catch (err) {
 					console.error('There was a problem with the fetch operation:', err);
@@ -192,9 +183,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			getItemCart: async () => {
 				try {
-					if (!token) {
-						return null
-					}
 					const resp = await fetch(`${url}view_cart`, {
 						headers: {
 							"Content-Type": "application/json",
@@ -214,9 +202,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			deleteItemCart: async (item_id) => {
 				try {
-					if (!token) {
-						return null
-					}
 					const resp = await fetch(`${url}delete_item_cart/${item_id}`, {
 						method: "DELETE",
 						headers: {
@@ -243,9 +228,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			updateItemCart: async (data) => {
 				try {
-					if (!token) {
-						return null
-					}
 					const resp = await fetch(`${url}update_item_cart`, {
 						method: "PUT",
 						headers: {
@@ -271,9 +253,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			newOrder: async () => {
 				try {
-					if (!token) {
-						return null
-					}
 					const resp = await fetch(`${url}new_order`, {
 						method: "POST",
 						headers: {
@@ -295,9 +274,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			newOrderDetail: async (order_id) => {
 				try {
-					if (!token) {
-						return null
-					}
 					const resp = await fetch(`${url}new_order_detail`, {
 						method: "POST",
 						headers: {
@@ -326,9 +302,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			getOrderDetails: async () => {
 				try {
-					if (!token) {
-						return null
-					}
 					const resp = await fetch(`${url}get_detail_orders`, {
 						headers: {
 							"Content-Type": "application/json",
@@ -349,9 +322,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			updateOrderDetail: async (detail_id, quantity) => {
 				try {
-					if (!token) {
-						return null
-					}
 					const resp = await fetch(`${url}update_order_detail/${detail_id}`, {
 						method: "PUT",
 						headers: {
@@ -443,7 +413,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					alert("Order Detail not deleted")
 
 				}
-			}
+			},
 
 
 		}

@@ -25,12 +25,13 @@ form::before {
     right: -20px; /* Ajusta según sea necesario */ 
     bottom: -20px; /* Ajusta según sea necesario */
     border: 2px solid #f98a02 ; /* Borde interior */ 
-    pointer-events: none; /* Asegura que el pseudo-elemento no interfiera con los eventos del ratón */ }
+    pointer-events: none; /* Asegura que el pseudo-elemento no interfiera con los eventos del ratón */ 
+}
 
 h1 {
     text-align: center;
-    margin-top: 30px;
-    margin-bottom: 60px;
+    margin-top: 15px;
+    margin-bottom: 50px;
 }
 
 .inputAndLabelEmail {
@@ -86,7 +87,7 @@ h1 {
 .loginButton {
     display: flex;
     justify-content: center;
-    margin-top: 100px;
+    margin-top: 60px;
 }
 
 .anchorSignup,.anchorSignup:hover {
@@ -100,5 +101,5 @@ h1 {
 
 }
 .anchorSignup span:hover{
-    color: white;
+    color:#f98a02 ;
 }

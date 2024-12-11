@@ -1,18 +1,78 @@
 .container.details {
+    display: flex;
+    justify-content: center;
     margin-bottom: 8%;
     margin-top: 8%;
+    text-align: center;
 }
 
-.container-img {
+.container-img.details {
+    margin-top: 15px;
     width: 100%;
     /* Asegura que el contenedor de la imagen ocupe todo el ancho de la tarjeta */
-    height: 200px;
+    height: 250px;
     /* Ajusta la altura según tus necesidades */
     overflow: hidden;
     /* Oculta cualquier contenido que se desborde */
+
 }
 
-.card-img-top {
+.card.details {
+    position: relative;
+    flex: 0 1 auto;
+    /* Evita que las tarjetas se estiren o compriman */
+    margin: 10px;
+    width: 50rem;
+    /* Ajusta el ancho de la tarjeta */
+    overflow: hidden;
+    /* Asegura que el contenido no se desborde */
+    border: 1px solid #f98a02;
+    /* Ajusta el borde para que sea sólido y no una lista de valores */
+    padding: 15px 12px;
+    word-wrap: break-word;
+    max-width: 100%;
+}
+
+.card.details::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    /* Ajusta según sea necesario */
+    left: 20px;
+    /* Ajusta según sea necesario */
+    right: 20px;
+    /* Ajusta según sea necesario */
+    bottom: 20px;
+    /* Ajusta según sea necesario */
+    border: 1px solid black;
+    /* Borde interior */
+    pointer-events: none;
+    /* Asegura que el pseudo-elemento no interfiera con los eventos del ratón */
+    box-sizing: border-box;
+    border-radius: 20px;
+}
+
+.card-title.details {
+    margin-top: 10px;
+    white-space: nowrap;
+    /* Evita que el texto se desborde en una sola línea */
+    overflow: hidden;
+    /* Oculta el desbordamiento del texto */
+    text-overflow: ellipsis;
+    /* Agrega puntos suspensivos al final del texto que se desborde */
+}
+
+.card-text.details {
+    margin-bottom: 5px;
+    white-space: nowrap;
+    /* Evita que el texto se desborde en una sola línea */
+    overflow: hidden;
+    /* Oculta el desbordamiento del texto */
+    text-overflow: ellipsis;
+    /* Agrega puntos suspensivos al final del texto que se desborde */
+}
+
+.card-img-top.details {
     width: 100%;
     /* Ajusta el ancho al 100% del contenedor */
     height: 100%;
@@ -22,9 +82,11 @@
     border-radius: 10px;
     /* Ajusta el radio del borde según tus necesidades */
 }
-.productoEnCarrito{
+
+.productoEnCarrito {
     color: red;
 }
+
 .btn.add {
     margin-top: 15px;
     background-color: #f98a02;

@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import { Context } from "../store/appContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import "../../styles/Signup.css";
 
 const Signup = () => {
   const { actions } = useContext(Context);
@@ -11,8 +12,8 @@ const Signup = () => {
     username: "",
     password: ""
   });
-  
 
+  
   const handleChange = (e) => {
     setUsersData({
       ...usersData, [e.target.name]: e.target.value
@@ -33,11 +34,11 @@ const Signup = () => {
   };
 
   return (
-    <div className='container d-flex flex-column align-items-center' style={{ margin: "10% auto" }}>
-      <div className='d-flex flex-column' style={{ width: "300px", padding: "10px", border: "1px solid gray" }}>
+    <div className='container signup'>
+      <div className='Signup'>
         <form onSubmit={handleSubmit}>
-          <h1 className='mb-5' style={{ marginLeft: "25%" }}>Signup</h1>
-          <div className="mb-3">
+          <h1>Signup</h1>
+          <div className="inputAndLabelEmailSignup">
             <label htmlFor="email">Email</label>
             <input
               type="email"
@@ -48,7 +49,7 @@ const Signup = () => {
               placeholder="name@example.com"
               required />
           </div>
-          <div className="mb-3">
+          <div className="inputAndLabelUsernameSignup">
             <label htmlFor="username">Username</label>
             <input
               type="text"
@@ -59,7 +60,7 @@ const Signup = () => {
               placeholder="Username"
               required />
           </div>
-          <div className="mb-3">
+          <div className="inputAndLabelPasswordSignup">
             <label htmlFor="password">Password</label>
             <input
               type="password"
@@ -70,7 +71,7 @@ const Signup = () => {
               placeholder="Enter password"
               required />
           </div>
-          <div className="mb-3">
+          <div className="inputAndLabelConfirmPasswordSignup">
             <label htmlFor="ConfirmPassword">Confirm Password</label>
             <input
               type="password"
@@ -80,10 +81,14 @@ const Signup = () => {
               placeholder="Enter password"
               required />
           </div>
-          <button className="btn btn-primary mt-5" style={{ width: "40%", marginLeft: "30%" }} type="submit">Register</button>
+          <div className="loginButton">
+            <button className="btn login" type="submit"><p>Signup</p><i className="fa-solid fa-user-plus"></i></button>
+          </div>
         </form>
       </div>
-      <a href="/">Click to Login</a>
+      <Link className="anchorLogin" to="/">
+        <span>Click to Login</span>
+      </Link>
     </div >
 
   )

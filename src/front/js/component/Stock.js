@@ -5,6 +5,7 @@ import '../../styles/Stock.css'
 
 
 const Stock = () => {
+    const token = localStorage.getItem("jwt_token");
     const { store, actions } = useContext(Context);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
@@ -13,10 +14,14 @@ const Stock = () => {
 
 
     useEffect(() => {
+        if (!token) {
+            navigate("/")
+            return;
+        }
         if (products.length > 0) {
             setIsLoading(false)
         }
-    }, [products])
+    }, [products, token, navigate])
 
 
     const handleItemUpdate = (e, product_id) => {
@@ -33,28 +38,26 @@ const Stock = () => {
         const data = { product_id, quantity: newQuantity };
         console.log('Sending data:', data);
         await actions.addItemCart(data);
+        window.location.reload();
     };
     const handleDetails = (product_id) => {
         navigate(`/details/${product_id}`)
     };
 
     return (
-        <div className='container'>
-
+        <div className='container stock'>
             {isLoading ? (
                 <div>Loading...</div>
             ) : (
-
                 products.map((product, index) => (
-                    <div className="card" key={index}>
-                        <h5 className="card-title">Name: {product.name}</h5>
-                        <p className="card-text">Type: {product.stocktype}</p>
-                        <div className='container-img'>
-                            <img src={product.image} className="card-img-top" alt={product.name} />
+                    <div className="card stock" key={index}>
+                        <h5 className="card-title stock">Name: {product.name}</h5>
+                        <p className="card-text stock">Type: {product.stocktype}</p>
+                        <div className='container-img stock'>
+                            <img src={product.image} className="card-img-top stock" alt={product.name} />
                         </div>
-                        <div className="card-body">
+                        <div className="card-body stock">
                             <div className='quantityStock'>
-
                                 <p className="card-text stock"> Stock: {product.stock}</p>
                                 <div className='lots'>
                                     <label htmlFor="lot">Quantity to add:</label>
@@ -69,16 +72,20 @@ const Stock = () => {
                                 </div>
                             </div>
                             <div className='addAndDetailsButtons'>
-                                <button className="btn stock" onClick={() => handleAddToCart(product.id)}><i className="fa-solid fa-cart-plus"></i></button>
-                                <button className="btn stock" onClick={() => handleDetails(product.id)}><p>Details</p><i className="fa-solid fa-info"></i></button>
+                                <button className="btn stock" onClick={() => handleAddToCart(product.id)}>
+                                    <i className="fa-solid fa-cart-plus"></i>
+                                </button>
+                                <button className="btn stock" onClick={() => handleDetails(product.id)}>
+                                    <p>Details</p>
+                                    <i className="fa-solid fa-info"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
                 ))
             )}
+        </div>
 
-
-        </div >
     )
 
 }

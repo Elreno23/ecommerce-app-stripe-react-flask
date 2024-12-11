@@ -1,0 +1,75 @@
+.container.update {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    flex-direction: column;
+}
+
+.btn-dark.update {
+    margin-top: 15px;
+    background-color: black;
+    border-color: #212529;
+    display: flex;
+    align-items: center;
+    height: 40px;
+}
+
+
+.formUpdateProducts h1 {
+    margin-bottom: 10px;
+}
+
+.formUpdateProducts {
+    position: relative;
+    border: 1px solid black;
+    padding: 20px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10%;
+    max-width: 50%;
+    margin-bottom: 10%;
+}
+
+.inputAndLabelNameUpdateProduct,
+.inputAndLabelDescriptionUpdateProduct,
+.inputAndLabelStockUpdateProduct,
+.inputAndLabelPriceUpdateProduct,
+.inputAndLabelImageUpdateProduct,
+.inputAndLabelStocktypeUpdateProduct {
+    margin: 10px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.inputAndLabelNameUpdateProduct input,
+.inputAndLabelDescriptionUpdateProduct input,
+.inputAndLabelStockUpdateProduct input,
+.inputAndLabelPriceUpdateProduct input,
+.inputAndLabelImageUpdateProduct input,
+.inputAndLabelStocktypeUpdateProduct select {
+    width: 20rem;
+    margin-top: 5px;
+}
+
+label {
+    margin-bottom: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.btn-dark.update i {
+    font-size: larger;
+}
+
+button.btn-dark.update:hover {
+    background-color: white;
+    color: #f98a02;
+}
+
+.btn-dark.update:focus {
+    outline: none;
+}

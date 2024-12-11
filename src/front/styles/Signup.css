@@ -1,0 +1,81 @@
+.container.signup {
+    display: flex;
+    justify-content: center;
+    /* Centra horizontalmente */
+    align-items: center;
+    /* Centra verticalmente */
+    height: 100vh;
+    /* Asegura que el contenedor ocupe toda la altura de la ventana */
+    flex-direction: column;
+    /* Opcional: Si quieres que los elementos se apilen verticalmente */
+}
+
+.inputAndLabelEmailSignup {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 20px 20px;
+}
+
+.inputAndLabelEmailSignup input {
+    width: 20rem;
+    margin-top: 10px;
+}
+
+.inputAndLabelPasswordSignup {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 20px 20px;
+}
+
+.inputAndLabelPasswordSignup input {
+    width: 20rem;
+    margin-top: 10px;
+}
+
+.inputAndLabelUsernameSignup {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 20px 20px;
+}
+
+.inputAndLabelUsernameSignup input {
+    width: 20rem;
+    margin-top: 10px;
+}
+
+.inputAndLabelConfirmPasswordSignup {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 20px 20px;
+}
+
+.inputAndLabelConfirmPasswordSignup input {
+    width: 20rem;
+    margin-top: 10px;
+}
+
+.btn.signup {
+    display: flex;
+    align-items: baseline;
+    background-color: #f98a02;
+    border-color: #212529;
+    width: 35%;
+    justify-content: space-around;
+}
+.anchorLogin,.anchorLogin:hover {
+    text-decoration: none; /* Elimina el subrayado del enlace */ 
+    color: inherit;
+    margin-top: 30px;
+}
+
+.anchorLogin span {
+    color: black;
+
+}
+.anchorLogin span:hover{
+    color:#f98a02 ;
+}
