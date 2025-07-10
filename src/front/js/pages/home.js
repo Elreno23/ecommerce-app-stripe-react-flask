@@ -21,10 +21,9 @@ const Home = () => {
 		e.preventDefault();
 		const result = await actions.login(loginData);
 		if (result.jwt_token && result.msg === "ok") {
-			localStorage.setItem("jwt_token", result.jwt_token);
 			navigate("/stock")
-		}
-	}
+		};
+	};
 
 	return (
 		<div className='container login'>

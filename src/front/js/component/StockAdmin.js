@@ -35,8 +35,8 @@ const StockAdmin = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-
-
+            console.log(resp);
+            
             const resp = await fetch(`${url}create_product`, {
                 method: "POST",
                 headers: {
@@ -45,12 +45,14 @@ const StockAdmin = () => {
                 },
                 body: JSON.stringify(productData)//Almacenar datos en un estado en el componente.
             });
+            console.log(token);
+            
             if (!resp.ok) {
                 throw new Error("Error receiving data!")
             }
             const result = await resp.json();
-            alert('Product created successfully!')
-            window.location.reload();
+            await actions.getStock();
+            
             return { status: resp.status, data: result.data };
         } catch (err) {
             console.error("There was a problem with the fetch operation:", err);
@@ -73,8 +75,7 @@ const StockAdmin = () => {
             if (!resp.ok) {
                 throw new Error("Error deleting data!");
             }
-            alert("Product Successfully Removed");
-            window.location.reload();
+           await actions.getStock();
         } catch (err) {
             console.error("There was a problem with the fetch operation:", err);
             alert("Product not removed!")

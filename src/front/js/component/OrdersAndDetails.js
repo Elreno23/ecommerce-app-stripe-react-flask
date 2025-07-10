@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 
 const OrdersAndDetails = () => {
     const token = localStorage.getItem("jwt_token");
-    // const stripePromise = loadStripe(process.env.STRIPE_PUBLISHABLE_KEY);
     const { actions, store } = useContext(Context);
     const [newQuantity, setNewQuantity] = useState(1);
     const [showInput, setShowInput] = useState({});
@@ -30,18 +29,6 @@ const OrdersAndDetails = () => {
         ))
     };
 
-    /*const handlePay = async () => {
-        const stripe = await stripePromise;
-        const session = await actions.createCheckoutSession()
-        if (session) {
-            const result = await stripe.redirectToCheckout({
-                sessionId: session.sessionId,
-            });
-            if (result.error) {
-                console.error(result.error.message);
-            }
-        }
-    }*/
 
     const handleUpdateQuantity = async (detail_id) => {
         const quantity = parseInt(newQuantity[detail_id], 10)
@@ -52,14 +39,11 @@ const OrdersAndDetails = () => {
         setShowInput(prevState => ({
             ...prevState, [detail_id]: false
         }));
-        window.location.reload();
     }
     const handleProductDelete = async (detail_id) => {
         try {
-
             await actions.deleteOrderDetail(detail_id);
             console.log("detailOrder", detail_id);
-            window.location.reload()
         } catch (err) {
             console.error("Error deleting order or order detail:", err);
             alert("Error deleting order or order detail");

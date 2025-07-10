@@ -37,7 +37,7 @@ CORS(app)
 
 app.config["JWT_SECRET_KEY"] = os.getenv("jwt-Token-key")
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-stripe_publishable_key = os.getenv("STRIPE_PUBLISHABLE_KEY")
+stripe_secret_key = os.getenv("STRIPE_SECRET_KEY")
 
 # database condiguration
 db_url = os.getenv("DATABASE_URL")
@@ -118,7 +118,7 @@ def signup():
             email=email,
             username=username,
             password=encrypted_password,
-            usertype=UserType.user,#Modificar a user!(pruebas)
+            usertype=UserType.admin,#Modificar a user!(pruebas)
             is_active=True
         )
         db.session.add(new_user)
@@ -252,7 +252,7 @@ def create_checkout_session():
             }],
             mode='payment',
             success_url='https://www.youtube.com/watch?v=XzPBwG6pD8E',
-            cancel_url='https://www.youtube.com/watch?v=JXqbiOMFu2c'
+            cancel_url='https://www.youtube.com/watch?v=L_qp8FOB_pE'
         )
         
         print("Checkout Session:", session) # Verificar la sesión de pago 

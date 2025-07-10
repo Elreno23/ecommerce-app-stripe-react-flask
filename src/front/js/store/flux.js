@@ -1,21 +1,11 @@
+import OrdersAndDetails from "../component/OrdersAndDetails";
+
 const getState = ({ getStore, getActions, setStore }) => {
-	const token = localStorage.getItem("jwt_token");
+
 	const url = process.env.BACKEND_URL
 	return {
 		store: {
-			message: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			],
+			token: localStorage.getItem("jwt_token"),
 			userProfile: null,
 			stock: [],
 			cart: [],
@@ -23,37 +13,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 		},
 		actions: {
-			// Use getActions to call a function within a fuction
-			exampleFunction: () => {
-				getActions().changeColor(0, "green");
-			},
-
-			getMessage: async () => {
-				try {
-					// fetching data from the backend
-					const resp = await fetch(process.env.BACKEND_URL + "/api/hello")
-					const data = await resp.json()
-					setStore({ message: data.message })
-					// don't forget to return something, that is how the async resolves
-					return data;
-				} catch (error) {
-					console.log("Error loading message from backend", error)
-				}
-			},
-			changeColor: (index, color) => {
-				//get the store
-				const store = getStore();
-
-				//we have to loop the entire demo array to look for the respective index
-				//and change its color
-				const demo = store.demo.map((elm, i) => {
-					if (i === index) elm.background = color;
-					return elm;
-				});
-
-				//reset the global store
-				setStore({ demo: demo });
-			},
 
 			register: async (usersData) => {
 				try {
@@ -89,8 +48,15 @@ const getState = ({ getStore, getActions, setStore }) => {
 						throw new Error(`Error receiving data${resp}`)
 					}
 					const result = await resp.json();
-					console.log(result.jwt_token);
-					return result
+					setStore({ token: result.jwt_token });
+					localStorage.setItem("jwt_token", result.jwt_token); //Para no perderlo si el usuario recarga.
+
+					await getActions().getUserInfo();
+					await getActions().getStock();
+					await getActions().getItemCart();
+
+					return result;
+
 				} catch (err) {//Manejamos errores.
 					console.error('There was a problem with the fetch operation:', err);
 					alert("Incorrect email or password")
@@ -99,10 +65,11 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			getUserInfo: async () => {
 				try {
+					console.log("Token usado:", getStore().token);
 					const resp = await fetch(`${url}profile`, {
 						headers: {
 							"Content-Type": "application/json",
-							"Authorization": `Bearer ${token}`
+							"Authorization": `Bearer ${getStore().token}`
 						}
 					});
 					if (!resp.ok) {
@@ -110,7 +77,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 					}
 					const result = await resp.json();
 					setStore({ userProfile: result })
-					console.log(getStore().userProfile);
 
 				} catch (err) {
 					console.error('There was a problem with the fetch operation:', err);
@@ -122,7 +88,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					const resp = await fetch(`${url}obtain_all_products`, {
 						headers: {
 							"Content-Type": "application/json",
-							"Authorization": `Bearer ${token}`
+							"Authorization": `Bearer ${getStore().token}`
 						}
 					});
 					if (!resp.ok) {
@@ -160,7 +126,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 						method: "POST",
 						headers: {
 							"Content-Type": "application/json",
-							"Authorization": `Bearer ${token}`
+							"Authorization": `Bearer ${getStore().token}`
 						},
 						body: JSON.stringify(data)
 					});
@@ -170,11 +136,11 @@ const getState = ({ getStore, getActions, setStore }) => {
 					}
 
 					const result = await resp.json();
-					console.log(result.data);
-					alert(`Product ${result.data.name} successfully added to cart`)
-					
-					setStore({cart:[...getStore().cart, result.data]})
-					return ({ status: resp.status, msg: result.msg, data: result.data })
+
+					setStore({ cart: [...getStore().cart, result.data] });
+					await getActions().getItemCart();
+
+					return (result.data);
 				} catch (err) {
 					console.error('There was a problem with the fetch operation:', err);
 					alert("Unable to add the product to the cart, please try again");
@@ -186,7 +152,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					const resp = await fetch(`${url}view_cart`, {
 						headers: {
 							"Content-Type": "application/json",
-							"Authorization": `Bearer ${token}`
+							"Authorization": `Bearer ${getStore().token}`
 						}
 					});
 					if (!resp.ok) {
@@ -206,7 +172,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 						method: "DELETE",
 						headers: {
 							"Content-Type": "application/json",
-							"Authorization": `Bearer ${token}`
+							"Authorization": `Bearer ${getStore().token}`
 						}
 					});
 					if (!resp.ok) {
@@ -232,7 +198,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 						method: "PUT",
 						headers: {
 							"Content-Type": "application/json",
-							"Authorization": `Bearer ${token}`
+							"Authorization": `Bearer ${getStore().token}`
 						},
 						body: JSON.stringify(data)
 
@@ -257,7 +223,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 						method: "POST",
 						headers: {
 							"Content-Type": "application/json",
-							"Authorization": `Bearer ${token}`
+							"Authorization": `Bearer ${getStore().token}`
 						}
 					});
 					if (!resp.ok) {
@@ -278,22 +244,21 @@ const getState = ({ getStore, getActions, setStore }) => {
 						method: "POST",
 						headers: {
 							"Content-Type": "application/json",
-							"Authorization": `Bearer ${token}`
+							"Authorization": `Bearer ${getStore().token}`
 						},
 						body: JSON.stringify({ order_id })
 					});
 					console.log(resp);
-					console.log(token);
 
 
 					if (!resp.ok) {
 						throw new Error("Error receiving data!");
 					}
 					const result = await resp.json();
-					console.log(result);
+					alert(result.msg)
 
-					alert("Order details successfully created");
-					return ({ msg: result.msg, data: result.data });
+					await getActions().getOrderDetails();
+
 				} catch (err) {
 					console.error("There was a problem with the fetch operation:", err);
 					alert("Order Details Not Created");
@@ -305,7 +270,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					const resp = await fetch(`${url}get_detail_orders`, {
 						headers: {
 							"Content-Type": "application/json",
-							"Authorization": `Bearer ${token}`
+							"Authorization": `Bearer ${getStore().token}`
 						}
 					});
 					if (!resp.ok) {
@@ -326,20 +291,17 @@ const getState = ({ getStore, getActions, setStore }) => {
 						method: "PUT",
 						headers: {
 							"Content-Type": "application/json",
-							"Authorization": `Bearer ${token}`
+							"Authorization": `Bearer ${getStore().token}`
 						},
 						body: JSON.stringify({ quantity })
 					});
-					console.log(resp);
 
 					if (!resp.ok) {
 						throw new Error("Error receiving data!")
-					}
+					};
 					const result = await resp.json();
-					console.log(result);
-
-					alert("Updated Order Details")
-					return ({ data: result.data })
+					alert(result.msg);
+					await getActions().getOrderDetails();
 				} catch (err) {
 					console.error("There was a problem with the fetch operation:", err);
 					alert("Order Details Not Updated")
@@ -348,22 +310,20 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			createCheckoutSession: async () => {
 				try {
-					if (!token) {
+					if (!getStore().token) {
 						return null;
 					}
 					const resp = await fetch(`${url}create_checkout_session`, {
 						method: "POST",
 						headers: {
 							"Content-Type": "application/json",
-							"Authorization": `Bearer ${token}`
+							"Authorization": `Bearer ${getStore().token}`
 						}
 					});
-					console.log(resp);
-					console.log(token);
 
 					if (!resp.ok) {
 						throw new Error("Error receiving data!");
-					}
+					};
 					const session = await resp.json();
 					alert("Checkout session successfully created");
 					return { sessionId: session.id };
@@ -399,7 +359,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 						method: "DELETE",
 						headers: {
 							"Content-Type": "application/json",
-							"Authorization": `Bearer ${token}`
+							"Authorization": `Bearer ${getStore().token}`
 						}
 					});
 					if (!resp.ok) {
@@ -407,12 +367,13 @@ const getState = ({ getStore, getActions, setStore }) => {
 					};
 					const result = await resp.json()
 					alert("Order Detail deleted")
+					await getActions().getOrderDetails();
 					return (result.msg)
 				} catch (err) {
 					console.error("There was a problem with the fetch operation:", err);
 					alert("Order Detail not deleted")
 
-				}
+				};
 			},
 
 

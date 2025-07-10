@@ -36,9 +36,7 @@ const Stock = () => {
     const handleAddToCart = async (product_id) => {
         const newQuantity = cartQuantities[product_id] || 1;
         const data = { product_id, quantity: newQuantity };
-        console.log('Sending data:', data);
         await actions.addItemCart(data);
-        window.location.reload();
     };
     const handleDetails = (product_id) => {
         navigate(`/details/${product_id}`)

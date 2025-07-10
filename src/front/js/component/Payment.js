@@ -8,7 +8,7 @@ const Payment = () => {
     const token = localStorage.getItem("jwt_token");
     const { actions, store } = useContext(Context);
     const navigate = useNavigate();
-    const stripePromise = loadStripe(process.env.STRIPE_PUBLISHABLE_KEY);
+    const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
     useEffect(() => {
         if (!token) {

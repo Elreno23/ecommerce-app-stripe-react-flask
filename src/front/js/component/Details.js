@@ -55,7 +55,6 @@ const Details = () => {
         const data = { product_id, quantity: newQuantity };
         await actions.addItemCart(data);
         navigate("/stock");
-        window.location.reload()
 
     };
 

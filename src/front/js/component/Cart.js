@@ -27,7 +27,6 @@ const Cart = () => {
   const handleItemDelete = async (e, item_id) => {
     e.stopPropagation(); //No funciona!
     await actions.deleteItemCart(item_id)
-    window.location.reload();
   }
   const handleQuantityChange = (e, item_id) => {
     e.stopPropagation();
@@ -51,7 +50,6 @@ const Cart = () => {
         const order_id = orderResponse.data.id;
         await actions.newOrderDetail(order_id)
         navigate("/orders-details")
-        window.location.reload();
       } else {
         console.error("Order response is invalid");
       }
@@ -65,7 +63,6 @@ const Cart = () => {
   const logout = () => {
     localStorage.removeItem("jwt_token");
     navigate("/");
-    alert("You are logged out.")
   }
 
   return (
